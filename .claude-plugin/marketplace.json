@@ -1,0 +1,15 @@
+{
+  "name": "ilia-izmailov-plugins",
+  "owner": {
+    "name": "Ilia Izmailov",
+    "url": "https://github.com/ilia-izmailov"
+  },
+  "plugins": [
+    {
+      "name": "think-through",
+      "source": "./plugins/think-through",
+      "description": "Deep structured thinking with parallel expert analysis before implementation",
+      "version": "1.0.0"
+    }
+  ]
+}

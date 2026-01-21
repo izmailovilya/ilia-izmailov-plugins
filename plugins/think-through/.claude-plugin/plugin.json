@@ -1,0 +1,12 @@
+{
+  "name": "think-through",
+  "version": "1.0.0",
+  "description": "Deep structured thinking with parallel expert analysis before implementation",
+  "author": {
+    "name": "Ilia Izmailov",
+    "url": "https://github.com/ilia-izmailov"
+  },
+  "repository": "https://github.com/ilia-izmailov/ilia-izmailov-plugins",
+  "license": "MIT",
+  "keywords": ["thinking", "planning", "experts", "analysis"]
+}
