@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Interactive feature audit for vibe-coded projects. Finds dead code, unused features, and experiments through conversation with the developer.",
   "author": {
-    "name": "Ilya"
+    "name": "Ilia Izmailov",
+    "url": "https://github.com/izmailovilya"
   },
   "keywords": [
     "audit",
