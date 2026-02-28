@@ -1,6 +1,6 @@
-# Ilya Izmailov's Claude Code Plugins
+# izteam — AI Agent Team for Claude Code
 
-A collection of plugins for [Claude Code](https://claude.ai/code).
+A team of AI agents you can assemble in [Claude Code](https://claude.ai/code).
 
 ## Installation
 
@@ -20,90 +20,91 @@ Then install any plugin:
 
 ## Available Plugins
 
-### think-through
-
-Deep structured thinking with parallel expert analysis before implementation.
-
-```bash
-/plugin install think-through@ilia-izmailov-plugins
-```
-
-**Usage:**
-```
-/deep-thinking <task or idea>
-```
-
-Breaks down your task into aspects, launches expert agents in parallel (🐙), and produces a comprehensive design document with decisions, trade-offs, and implementation plan.
-
-[Read more →](./plugins/think-through/README.md)
-
----
-
-### vibe-audit
-
-Interactive feature audit for vibe-coded projects. Finds dead code, unused features, and experiments through conversation.
-
-```bash
-/plugin install vibe-audit@ilia-izmailov-plugins
-```
-
-**Usage:**
-```
-/vibe-audit              # Full codebase scan
-/vibe-audit features     # src/features/ deep audit
-/vibe-audit server       # src/server/ routers & services
-/vibe-audit ui           # src/design-system/ components
-/vibe-audit stores       # src/stores/ Zustand state
-```
-
-Scans your codebase for suspicious areas (orphan routes, dead UI, stale code), asks if you need them, and safely removes what you don't — with git backup.
-
-[Read more →](./plugins/vibe-audit/README.md)
-
----
-
-### agent-teams
+### team
 
 Launch a team of AI agents to implement features with built-in code review gates.
 
-> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/agent-teams/README.md#prerequisites)
+> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/team/README.md#prerequisites)
 
 ```bash
-/plugin install agent-teams@ilia-izmailov-plugins
+/plugin install team@ilia-izmailov-plugins
 ```
 
 **Usage:**
 ```
-/team-feature "Add user settings page"
-/team-feature docs/plan.md --coders=2
+/build "Add user settings page"
+/build docs/plan.md --coders=2
+/brief "Add notifications" — interview first, then build
 /conventions
 ```
 
 Spawns a full team — researchers explore your codebase, coders implement with gold standard examples, 3 specialized reviewers (security, logic, quality) check every change, and a Tech Lead validates architecture. Supports SIMPLE/MEDIUM/COMPLEX complexity with automatic team scaling.
 
-[Read more →](./plugins/agent-teams/README.md)
+[Read more →](./plugins/team/README.md)
 
 ---
 
-### expert-arena
+### think
 
-Expert debate arena — real experts argue organically and converge on optimal solutions for any domain.
-
-> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/agent-teams/README.md#prerequisites)
+Deep structured thinking with parallel expert analysis before implementation.
 
 ```bash
-/plugin install expert-arena@ilia-izmailov-plugins
+/plugin install think@ilia-izmailov-plugins
 ```
 
 **Usage:**
 ```
-/expert-arena "Should we use microservices or monolith?"
-/expert-arena "Best pricing strategy for a developer tool?"
+/think <task or idea>
+```
+
+Breaks down your task into aspects, launches expert agents in parallel, and produces a comprehensive design document with decisions, trade-offs, and implementation plan.
+
+[Read more →](./plugins/think/README.md)
+
+---
+
+### arena
+
+Expert debate arena — real experts argue organically and converge on optimal solutions for any domain.
+
+> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/team/README.md#prerequisites)
+
+```bash
+/plugin install arena@ilia-izmailov-plugins
+```
+
+**Usage:**
+```
+/arena "Should we use microservices or monolith?"
+/arena "Best pricing strategy for a developer tool?"
 ```
 
 Selects 3-5 real experts with opposing viewpoints, gathers context via researchers, launches organic peer-to-peer debates with live commentary, and synthesizes results into a structured document with verdict and recommendations.
 
-[Read more →](./plugins/expert-arena/README.md)
+[Read more →](./plugins/arena/README.md)
+
+---
+
+### audit
+
+Interactive feature audit for vibe-coded projects. Finds dead code, unused features, and experiments through conversation.
+
+```bash
+/plugin install audit@ilia-izmailov-plugins
+```
+
+**Usage:**
+```
+/audit              # Full codebase scan
+/audit features     # src/features/ deep audit
+/audit server       # src/server/ routers & services
+/audit ui           # src/design-system/ components
+/audit stores       # src/stores/ Zustand state
+```
+
+Scans your codebase for suspicious areas (orphan routes, dead UI, stale code), asks if you need them, and safely removes what you don't — with git backup.
+
+[Read more →](./plugins/audit/README.md)
 
 ---
 

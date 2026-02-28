@@ -1,0 +1,12 @@
+{
+  "name": "arena",
+  "version": "1.1.0",
+  "description": "Expert debate arena — dynamic experts debate and converge on optimal solutions for any domain",
+  "author": {
+    "name": "Ilya Izmailov",
+    "url": "https://github.com/izmailovilya"
+  },
+  "repository": "https://github.com/izmailovilya/ilia-izmailov-plugins",
+  "license": "MIT",
+  "keywords": ["experts", "debate", "arena", "consensus", "decision-making", "team"]
+}

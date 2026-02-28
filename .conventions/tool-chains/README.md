@@ -1,6 +1,6 @@
 # Tool Chains
 
-Persistent build/test/lint/typecheck commands for the project. Created by `/conventions` or `/team-feature` and reused across sessions.
+Persistent build/test/lint/typecheck commands for the project. Created by `/conventions` or `/build` and reused across sessions.
 
 ## File: `commands.yml`
 
@@ -14,7 +14,7 @@ format: pnpm biome format --write
 
 ## How It's Used
 
-- **team-feature Lead**: reads `commands.yml` instead of asking codebase-researcher for build/test commands
+- **build Lead**: reads `commands.yml` instead of asking codebase-researcher for build/test commands
 - **Coders**: use commands from `commands.yml` for self-checks (Step 5)
 - **Phase 3 verification**: Lead runs build + test from `commands.yml`
 

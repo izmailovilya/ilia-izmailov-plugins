@@ -6,26 +6,26 @@
   },
   "plugins": [
     {
-      "name": "think-through",
-      "source": "./plugins/think-through",
+      "name": "think",
+      "source": "./plugins/think",
       "description": "Deep structured thinking with parallel expert analysis before implementation",
       "version": "1.1.0"
     },
     {
-      "name": "vibe-audit",
-      "source": "./plugins/vibe-audit",
+      "name": "audit",
+      "source": "./plugins/audit",
       "description": "Interactive feature audit for vibe-coded projects - finds dead code through conversation",
       "version": "0.1.0"
     },
     {
-      "name": "agent-teams",
-      "source": "./plugins/agent-teams",
+      "name": "team",
+      "source": "./plugins/team",
       "description": "Launch a team of AI agents with always-on Supervisor for feature implementation with code review gates",
       "version": "0.3.0"
     },
     {
-      "name": "expert-arena",
-      "source": "./plugins/expert-arena",
+      "name": "arena",
+      "source": "./plugins/arena",
       "description": "Expert debate arena — real experts argue organically and converge on optimal solutions",
       "version": "1.1.0"
     }

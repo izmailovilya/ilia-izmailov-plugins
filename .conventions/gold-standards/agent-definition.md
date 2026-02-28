@@ -34,6 +34,6 @@ Body structure:
 - Reviewer agents include Step 0: Orientation (read CLAUDE.md, DECISIONS.md, .conventions/) before first review
 
 ## Reference
-- `plugins/agent-teams/agents/supervisor.md` (canonical permanent agent)
-- `plugins/agent-teams/agents/coder.md` (canonical temporary agent with done_criteria + decision_policy + P0/P1/P2)
-- `plugins/think-through/agents/expert.md` (canonical read-only agent with disallowedTools for MCP access)
+- `plugins/team/agents/supervisor.md` (canonical permanent agent)
+- `plugins/team/agents/coder.md` (canonical temporary agent with done_criteria + decision_policy + P0/P1/P2)
+- `plugins/think/agents/expert.md` (canonical read-only agent with disallowedTools for MCP access)

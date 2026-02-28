@@ -1,6 +1,6 @@
 # Decisions
 
-Reusable architectural decisions that persist across sessions. Each file captures a decision that future `/team-feature` runs should respect.
+Reusable architectural decisions that persist across sessions. Each file captures a decision that future `/build` runs should respect.
 
 ## Format
 
@@ -21,7 +21,7 @@ Each decision file: `{topic}.md`
 
 ## How It's Used
 
-- **team-feature Lead**: reads decisions/ at Step 1 (orientation) to understand past choices
+- **build Lead**: reads decisions/ at Step 1 (orientation) to understand past choices
 - **Tech Lead**: checks decisions/ before suggesting architectural changes
 - **Coders**: reference relevant decisions when implementing related code
 
@@ -30,4 +30,4 @@ Each decision file: `{topic}.md`
 - One file per decision topic (e.g., `state-management.md`, `auth-approach.md`)
 - Decisions are append-only — don't delete, mark superseded if overridden
 - Only architectural decisions — not implementation details
-- Created by Tech Lead during `/team-feature` runs when DECISIONS.md contains reusable patterns
+- Created by Tech Lead during `/build` runs when DECISIONS.md contains reusable patterns

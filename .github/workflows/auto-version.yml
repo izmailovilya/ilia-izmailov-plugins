@@ -1,0 +1,150 @@
+name: Auto Version
+
+on:
+  push:
+    branches: [main]
+    paths: ['plugins/**']
+
+permissions:
+  contents: write
+
+jobs:
+  auto-version:
+    runs-on: ubuntu-latest
+    # Skip if commit was made by this workflow (prevent loops)
+    if: "!contains(github.event.head_commit.message, '[auto-version]')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect changes and bump versions
+        id: version
+        run: |
+          PLUGINS=("team" "think" "arena" "audit")
+          BUMPED=""
+          TAGS=""
+
+          for plugin in "${PLUGINS[@]}"; do
+            PLUGIN_DIR="plugins/${plugin}"
+            PLUGIN_JSON="${PLUGIN_DIR}/.claude-plugin/plugin.json"
+            MARKETPLACE_JSON=".claude-plugin/marketplace.json"
+
+            # Find last tag for this plugin
+            LAST_TAG=$(git tag -l "${plugin}-v*" --sort=-v:refname | head -1)
+
+            if [ -z "$LAST_TAG" ]; then
+              # No tag yet — check if plugin dir has any changes since initial commit
+              CHANGES=$(git log --oneline -- "$PLUGIN_DIR" | head -1)
+              if [ -z "$CHANGES" ]; then
+                continue
+              fi
+              DIFF_REF=$(git rev-list --max-parents=0 HEAD)
+            else
+              DIFF_REF="$LAST_TAG"
+            fi
+
+            # Check if there are changes since last tag
+            CHANGED_FILES=$(git diff --name-only "$DIFF_REF"..HEAD -- "$PLUGIN_DIR" 2>/dev/null || true)
+            if [ -z "$CHANGED_FILES" ]; then
+              continue
+            fi
+
+            # Get current version
+            CURRENT=$(jq -r '.version' "$PLUGIN_JSON")
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+            # Parse commits for bump type
+            COMMITS=$(git log --format="%s" "$DIFF_REF"..HEAD -- "$PLUGIN_DIR" 2>/dev/null || true)
+            BUMP="patch"
+
+            while IFS= read -r msg; do
+              if echo "$msg" | grep -qiE "BREAKING CHANGE|^feat!:|^fix!:"; then
+                BUMP="major"
+                break
+              elif echo "$msg" | grep -qiE "^feat(\(.+\))?:"; then
+                BUMP="minor"
+              fi
+            done <<< "$COMMITS"
+
+            # Calculate new version
+            case "$BUMP" in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+            # Update plugin.json
+            jq --arg v "$NEW_VERSION" '.version = $v' "$PLUGIN_JSON" > tmp.json && mv tmp.json "$PLUGIN_JSON"
+
+            # Update marketplace.json
+            jq --arg name "$plugin" --arg v "$NEW_VERSION" \
+              '(.plugins[] | select(.name == $name)).version = $v' \
+              "$MARKETPLACE_JSON" > tmp.json && mv tmp.json "$MARKETPLACE_JSON"
+
+            BUMPED="${BUMPED}${plugin} v${NEW_VERSION} (${BUMP})\n"
+            TAGS="${TAGS} ${plugin}-v${NEW_VERSION}"
+
+            echo "${plugin}_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "${plugin}_bump=${BUMP}" >> "$GITHUB_OUTPUT"
+          done
+
+          if [ -z "$BUMPED" ]; then
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+            echo "No version bumps needed"
+          else
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+            echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+            echo -e "Bumped:\n${BUMPED}"
+          fi
+
+      - name: Commit and tag
+        if: steps.version.outputs.bumped == 'true'
+        run: |
+          git add .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
+          git commit -m "$(cat <<'EOF'
+          chore: bump plugin versions [auto-version]
+
+          ${{ steps.version.outputs.tags }}
+          EOF
+          )"
+
+          # Create tags
+          for tag in ${{ steps.version.outputs.tags }}; do
+            git tag "$tag"
+          done
+
+          git push origin main --tags
+
+      - name: Create GitHub Releases
+        if: steps.version.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for tag in ${{ steps.version.outputs.tags }}; do
+            plugin=$(echo "$tag" | sed 's/-v.*//')
+            version=$(echo "$tag" | sed 's/.*-v//')
+            gh release create "$tag" \
+              --title "${plugin} v${version}" \
+              --generate-notes \
+              --notes-start-tag "$(git tag -l "${plugin}-v*" --sort=-v:refname | sed -n '2p')" \
+              2>/dev/null || true
+          done

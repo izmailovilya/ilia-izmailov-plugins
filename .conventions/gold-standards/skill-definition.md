@@ -23,4 +23,4 @@ Body structure:
 - Phases use numbered steps with concrete agent spawn patterns
 
 ## Reference
-- `plugins/agent-teams/skills/team-feature/SKILL.md` (canonical multi-phase skill)
+- `plugins/team/skills/build/SKILL.md` (canonical multi-phase skill)
