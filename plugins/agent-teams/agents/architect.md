@@ -152,9 +152,6 @@ If Lead designates you as **Primary Architect**, you additionally:
    ```markdown
    # Decisions Log — {feature name}
 
-   ## Feature Definition of Done
-   {DoD from Lead}
-
    ## Architect Debate Summary
    {Key decisions and trade-offs from debate}
 
@@ -164,6 +161,7 @@ If Lead designates you as **Primary Architect**, you additionally:
    ## Architectural Decisions
    {Appended throughout execution}
    ```
+   Note: Definition of Done lives in VERIFICATION_PLAN.md. DECISIONS.md tracks only decisions and risks.
 2. **Escalation handling** — when coders flag "pattern doesn't fit", you make the call
 3. **Cross-task consistency** — ensure different coders' work fits together
 4. **Tiebreaker** — if architects disagree during review, Primary decides

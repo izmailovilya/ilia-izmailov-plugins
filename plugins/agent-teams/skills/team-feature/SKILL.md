@@ -198,7 +198,7 @@ Once researchers return, classify the feature complexity. Follow this algorithm 
 | # | Trigger | How to check |
 |---|---------|-------------|
 | 1 | **2+ layers** touched (DB, API, UI) | From researcher: which layers does the feature touch? |
-| 2 | **Changes existing behavior** (not just adding new code) | Does the feature modify files that already work, or only create new ones? |
+| 2 | **Modifies existing logic flow** (not just adding new code to existing files) | Does the feature change how existing code behaves, or only add new functions/routes/components to existing files? Adding a new endpoint to an existing router ≠ changing existing behavior. |
 | 3 | **Near sensitive areas** — code adjacent to auth, payments, permissions | From researcher: do any touched files import/call auth or billing modules? |
 | 4 | **3+ tasks** in decomposition | Count tasks after planning |
 | 5 | **Dependencies between tasks** — at least 1 task blocks another | Can all tasks run in parallel, or does order matter? |
@@ -253,7 +253,7 @@ FINAL: [SIMPLE / MEDIUM / COMPLEX] (mandatory, not overridable)
 - Full flow as described below
 - Tech Lead validates plan
 - Risk analysis (Step 4b)
-- 1-3 separate reviewers
+- 3 separate reviewers (security, logic, quality)
 
 **COMPLEX:**
 - **3 Architects (Frontend, Backend, Systems) debate the specification** before coding starts
@@ -268,7 +268,7 @@ FINAL: [SIMPLE / MEDIUM / COMPLEX] (mandatory, not overridable)
 | Complexity | Team Composition | Total Agents |
 |-----------|------------------|--------------|
 | SIMPLE | Lead + Coder + Unified Reviewer | 3 |
-| MEDIUM | Lead + Coder + 1-3 Reviewers + Tech Lead | 4-6 |
+| MEDIUM | Lead + Coder + 3 Reviewers + Tech Lead | 6 |
 | COMPLEX | Lead + 3 Architects (debate → review) + Coder(s) + Researchers + Risk Testers | 5-8+ |
 
 For SIMPLE tasks: spawn `agent-teams:unified-reviewer` instead of 3 separate reviewers. The unified reviewer covers security basics, logic, and quality in one pass. If it detects sensitive code → it escalates to MEDIUM automatically.
@@ -279,30 +279,34 @@ Now plan:
 TeamCreate(team_name="feature-<short-name>")
 ```
 
-**Define the Feature Definition of Done** — the quality bar for the ENTIRE feature:
+**Write VERIFICATION_PLAN.md** — the single source of truth for "is it done?"
 
-```
-Feature Definition of Done:
-- Build passes: {build command from researcher}
-- All tests pass: {test command from researcher}
-- Automated convention checks pass (naming, imports, structure)
-- No unresolved CRITICAL review findings
-- Consistent with project architecture: {key patterns from researcher}
-- CLAUDE.md conventions followed
-- Gold standard patterns matched (or deviation explicitly justified)
-```
+This document combines: Definition of Done (quality bar), business criteria (from brief), risk mitigation checks (from risk analysis), and automated verification checks. Everyone references this one document to answer "can we ship?"
 
-You'll pass this DoD to Tech Lead for DECISIONS.md, and include it in task descriptions.
-
-**Write VERIFICATION_PLAN.md** — the verification checklist for automated post-implementation checks.
-
-**For SIMPLE/MEDIUM** — Lead writes it now based on researcher findings:
+**For SIMPLE/MEDIUM** — Lead writes it now based on researcher findings + brief:
 
 ```
 Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
 
 # Verification Plan
 ## Feature: {feature name}
+
+## Definition of Done
+- Build passes: {build command from researcher}
+- All tests pass: {test command from researcher}
+- Automated convention checks pass (naming, imports, structure)
+- No unresolved CRITICAL review findings
+- CLAUDE.md conventions followed
+- Gold standard patterns matched (or deviation explicitly justified)
+
+## Business Criteria
+{From brief's Success Criteria — restate each as a verifiable check}
+- [ ] {User can do X}
+- [ ] {Y is visible on screen}
+- [ ] Exclusions respected: {from brief's Exclusions}
+
+## Risk Mitigation Checks
+{Added after Step 4b risk analysis — leave empty until then}
 
 ## Build & Types
 - [ ] `{build command}` passes
@@ -314,7 +318,7 @@ Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
 ## Browser Checks
 - [ ] Page {url} loads without console errors
 - [ ] {Element} is visible and clickable
-{add checks based on DoD + task acceptance criteria that involve UI}
+{add checks based on task acceptance criteria that involve UI}
 
 ## Spec Checks
 - [ ] File `{path}` exists and exports `{symbol}`
@@ -325,7 +329,7 @@ Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
   → {Step-by-step instructions for manual verification}
 ```
 
-How to populate: Build/Tests from researcher findings, Browser Checks from UI criteria, Spec Checks from acceptance criteria, Human Checks for anything requiring judgment.
+How to populate: Definition of Done from technical quality bar + CLAUDE.md, Business Criteria from brief's Success Criteria, Build/Tests from researcher findings, Browser Checks from UI criteria, Spec Checks from acceptance criteria, Human Checks for anything requiring judgment. Risk Mitigation Checks are added after Step 4b.
 
 **For COMPLEX** — skip writing VERIFICATION_PLAN.md here. Architects will populate it during the debate phase (Step 4c) — each adds checks from their domain expertise. This produces a much more thorough plan than Lead writing it alone.
 
@@ -379,7 +383,7 @@ TaskCreate(
   - Lint: pnpm biome check
   - Type check: pnpm tsc --noEmit
 
-  Feature DoD applies — see DECISIONS.md"
+  Feature DoD applies — see VERIFICATION_PLAN.md"
 )
 ```
 
@@ -423,6 +427,12 @@ Task(
   name="tech-lead",
   prompt="Feature: '{feature description}'.
 Team name: feature-<short-name>.
+
+Definition of Done: {DoD from Step 3}
+
+CODEBASE CONTEXT (from research):
+{Paste codebase-researcher findings: tech stack, project structure, relevant existing code}
+
 Wait for my instructions (VALIDATE PLAN, IDENTIFY RISKS, review requests)."
 )
 ```
@@ -474,6 +484,12 @@ SendMessage to architect-frontend, architect-backend, architect-systems:
 Feature: {feature description}
 Feature Definition of Done: {DoD from Step 3}
 
+CODEBASE CONTEXT (from research):
+{Paste codebase-researcher findings: tech stack, project structure, existing features, conventions}
+
+REFERENCE CODE (gold standards):
+{Paste reference-researcher findings or .conventions/ gold standards — the same canonical examples coders will receive}
+
 YOUR TEAM:
 - architect-frontend (UI/UX/components)
 - architect-backend (API/DB/security)
@@ -482,7 +498,7 @@ YOUR TEAM:
 INSTRUCTIONS:
 1. Read all tasks (TaskList + TaskGet)
 2. Read CLAUDE.md and .conventions/ for project context
-3. Post your CRITIQUE to the other two architects via SendMessage
+3. Post your CRITIQUE to the other two architects via SendMessage — ground it in the codebase context and reference code above
 4. Respond to their critiques — debate directly with each other
 5. Add VERIFICATION CHECKS from your domain — what should be verified after implementation:
    - Frontend: browser checks (pages load, elements visible, interactions work)
@@ -501,7 +517,7 @@ Wait for all 3 architects to send "SPEC APPROVED" to Lead. If they converge:
   - Feature is mostly UI → architect-frontend is Primary
   - Feature is mostly API/DB → architect-backend is Primary
   - Feature is cross-cutting/infra → architect-systems is Primary
-- **Compile VERIFICATION_PLAN.md** from all architects' verification checks:
+- **Compile VERIFICATION_PLAN.md** from all architects' verification checks + brief + DoD:
 
 ```
 Lead collects verification checks from all 3 architects and writes:
@@ -510,6 +526,22 @@ Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
 
 # Verification Plan
 ## Feature: {feature name}
+
+## Definition of Done
+- Build passes, all tests pass
+- Automated convention checks pass
+- No unresolved CRITICAL review findings
+- CLAUDE.md conventions followed
+- Gold standard patterns matched (or deviation explicitly justified)
+
+## Business Criteria
+{From brief's Success Criteria — restate each as a verifiable check}
+- [ ] {User can do X}
+- [ ] {Y is visible on screen}
+- [ ] Exclusions respected: {from brief's Exclusions}
+
+## Risk Mitigation Checks
+{Added after Step 4b risk analysis}
 
 ## Build & Types
 {checks from architect-systems: build commands, typecheck}
@@ -606,8 +638,7 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    Based on these findings:
    1. Update DECISIONS.md with confirmed risks and their mitigations
    2. For CONFIRMED risks: add mitigation criteria to affected task descriptions (use TaskUpdate to append to description)
-   3. Mark tasks with CONFIRMED CRITICAL risks as high-risk (these get 3 reviewers + enabling agents during review)
-   4. If any risk requires task reordering or new tasks — recommend changes
+   3. If any risk requires task reordering or new tasks — recommend changes
 
    Reply with summary of changes made."
    ```
@@ -616,6 +647,12 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    - If new tasks suggested → create them (TaskCreate)
    - If reordering suggested → adjust dependencies (TaskUpdate)
    - If a risk requires user decision (e.g., "accept data loss during migration or add backward compatibility?") → notify user
+   - **Update VERIFICATION_PLAN.md** — add confirmed risk mitigations to the "Risk Mitigation Checks" section:
+     ```
+     ## Risk Mitigation Checks
+     - [ ] RISK-1 ({severity}): {what to verify — from risk tester findings}
+     - [ ] RISK-2 ({severity}): {what to verify}
+     ```
 
 **What risk analysis catches that review doesn't:**
 
@@ -638,24 +675,53 @@ Spawn everyone NOW — reviewers (or switch architects to review mode), and code
 ```
 Task(subagent_type="agent-teams:unified-reviewer", team_name="feature-<short-name>", name="unified-reviewer",
   prompt="You are the unified reviewer for team feature-<short-name>.
+
+FEATURE CONTEXT:
+Feature: {feature description — what we're building and why}
+Definition of Done: {DoD from Step 3}
+Gold standard references: {list reference files from researcher findings or .conventions/}
+
 Wait for REVIEW requests from coders via SendMessage.
+When reviewing, verify code matches the gold standard patterns and meets the Definition of Done.
 If code touches auth/payments/migrations, send ESCALATE TO MEDIUM to Lead.")
 ```
 
-**For MEDIUM** — spawn all 3 reviewers in parallel:
+**For MEDIUM** — spawn all 3 reviewers in parallel. Include feature context, DoD, gold standards, and confirmed risks so reviewers can verify code against the full picture:
 ```
 Task(subagent_type="agent-teams:security-reviewer", team_name="feature-<short-name>", name="security-reviewer",
   prompt="You are the security reviewer for team feature-<short-name>.
-Wait for REVIEW requests from coders via SendMessage.")
+
+FEATURE CONTEXT:
+Feature: {feature description — what we're building and why}
+Definition of Done: {DoD from Step 3}
+Gold standard references: {list reference files from researcher findings or .conventions/}
+Confirmed risks from risk analysis: {list CONFIRMED risks from Step 4b, especially security-related}
+
+Wait for REVIEW requests from coders via SendMessage.
+Pay special attention to the confirmed risks above — verify that code properly addresses their mitigations.")
 
 Task(subagent_type="agent-teams:logic-reviewer", team_name="feature-<short-name>", name="logic-reviewer",
   prompt="You are the logic reviewer for team feature-<short-name>.
-Wait for REVIEW requests from coders via SendMessage.")
+
+FEATURE CONTEXT:
+Feature: {feature description — what we're building and why}
+Definition of Done: {DoD from Step 3}
+Gold standard references: {list reference files from researcher findings or .conventions/}
+Confirmed risks from risk analysis: {list CONFIRMED risks from Step 4b, especially logic/race-condition risks}
+
+Wait for REVIEW requests from coders via SendMessage.
+Pay special attention to the confirmed risks above — verify that code properly addresses their mitigations.")
 
 Task(subagent_type="agent-teams:quality-reviewer", team_name="feature-<short-name>", name="quality-reviewer",
   prompt="You are the quality reviewer for team feature-<short-name>.
+
+FEATURE CONTEXT:
+Feature: {feature description — what we're building and why}
+Definition of Done: {DoD from Step 3}
+Gold standard references: {list reference files from researcher findings or .conventions/}
+
 Wait for REVIEW requests from coders via SendMessage.
-Gold standard references for this feature: [list reference files from researcher findings].")
+Verify code matches the gold standard patterns and project conventions.")
 ```
 
 **For COMPLEX** — switch architects to review mode (they're already spawned from Step 4c):
@@ -668,12 +734,17 @@ You are now reviewing code from coders in your domain:
 - architect-backend: API, DB, data integrity, race conditions, server-side security
 - architect-systems: tests, conventions, naming, code quality, DX
 
+CONFIRMED RISKS FROM RISK ANALYSIS:
+{List confirmed risks from Step 4b — verify that code properly addresses their mitigations during review}
+
 Wait for REVIEW requests from coders via SendMessage."
 ```
 
 No separate security/logic/quality reviewers for COMPLEX — architects cover all review areas through their domain expertise.
 
 **2. Coders** (up to --coders in parallel, uses `agents/coder.md`):
+
+**Enforcement:** Count available tasks. Spawn min(available_tasks, --coders) coders. Do NOT exceed --coders (default 3) at initial spawn.
 
 Tell each coder their team roster so they can communicate directly:
 
@@ -686,11 +757,14 @@ Task(
   prompt="You are Coder #{N}. Team: feature-<short-name>.
 
 FEATURE GOAL: {1-2 sentences — what we're building and why, so you understand the big picture}
+DEFINITION OF DONE: {DoD from Step 3}
 
 YOUR TEAM ROSTER (communicate directly via SendMessage):
 - Reviewers: {unified-reviewer (SIMPLE) / security-reviewer, logic-reviewer, quality-reviewer (MEDIUM)}
 - Tech Lead: tech-lead
 - Lead: for DONE/STUCK signals only
+
+IMPORTANT: If DECISIONS.md exists at .claude/teams/{team-name}/DECISIONS.md — read it before starting. It contains architectural decisions, confirmed risks, and their mitigations that affect your implementation.
 
 YOUR TASK CONTEXT:
 {Brief summary of what this coder will work on — from task descriptions}
@@ -714,6 +788,7 @@ Task(
   prompt="You are Coder #{N}. Team: feature-<short-name>.
 
 FEATURE GOAL: {1-2 sentences — what we're building and why, so you understand the big picture}
+DEFINITION OF DONE: {DoD from Step 3}
 
 YOUR TEAM ROSTER (communicate directly via SendMessage):
 - Reviewers (specialized architects):
@@ -724,6 +799,8 @@ YOUR TEAM ROSTER (communicate directly via SendMessage):
 - Lead: for DONE/STUCK signals only
 
 Send REVIEW requests to ALL 3 architects — each reviews from their domain.
+
+IMPORTANT: Read DECISIONS.md at .claude/teams/{team-name}/DECISIONS.md before starting — it contains the architect debate summary, confirmed risks, and mitigations that affect your implementation.
 
 YOUR TASK CONTEXT:
 {Brief summary of what this coder will work on — from task descriptions}
@@ -820,8 +897,8 @@ Coders drive their own review process via SendMessage to reviewers and tech-lead
 | Coder: `DONE: task #N. ALL MY TASKS COMPLETE` | Update state.md. Check if ALL coding tasks done → **change Phase in state.md to VERIFICATION and follow Phase 3 Instructions in state.md step by step.** If unassigned remain, spawn new coder. |
 | Coder: `QUESTION: task #N. [question]` | Answer from your Phase 1 context if you can. If not — dispatch a researcher (Explore or general-purpose with WebSearch), then SendMessage the answer to coder. |
 | Coder: `STUCK: task #N` | Dispatch a researcher to investigate. Adjust task description or reassign to different coder. |
-| Coder: `REVIEW_LOOP: task #N` | Dispatch a researcher to read code + review feedback. SendMessage to coder with concrete fix. |
-| Unified reviewer: `ESCALATE TO MEDIUM` | Spawn 3 specialized reviewers (security, logic, quality). SendMessage to coder with updated team roster. |
+| Coder: `REVIEW_LOOP: task #N` | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from your context or dispatch researcher. |
+| Unified reviewer: `ESCALATE TO MEDIUM` | Spawn 3 specialized reviewers (security, logic, quality) + tech-lead. SendMessage to coder: "ROSTER UPDATE: your reviewers are now security-reviewer, logic-reviewer, quality-reviewer. Your architectural gate is now tech-lead. Cancel pending unified-reviewer wait and re-send REVIEW to new roster." Shut down unified-reviewer. |
 
 #### What you do NOT do:
 
@@ -830,7 +907,6 @@ Coders drive their own review process via SendMessage to reviewers and tech-lead
 - Do NOT notify reviewers about completed tasks (coders message them directly)
 - Do NOT notify tech-lead about reviews (coders message tech-lead directly)
 - Do NOT forward messages between team members (they communicate directly)
-- Do NOT spawn enabling agents
 
 #### State file updates:
 
@@ -1144,7 +1220,7 @@ When things go wrong, handle it yourself — don't involve the user:
 | Situation | Action |
 |-----------|--------|
 | Coder reports STUCK | First, try to answer from your Phase 1 context. Only dispatch a researcher if the problem requires reading code you haven't seen. Then: adjust the task, split it, or assign to a different coder. |
-| Coder reports REVIEW_LOOP (3+ review rounds on same task) | The problem is likely a misunderstanding between coder and reviewer. First, try to resolve from context. Only dispatch a researcher if you need to read code + review feedback you don't have. SendMessage to coder with concrete fix. |
+| Coder reports REVIEW_LOOP (3+ review rounds on same task) | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from your context or dispatch researcher. |
 | Tech Lead / Primary Architect rejects architecture > 2 times | Review the disagreement yourself. Only dispatch a web researcher if you genuinely lack domain knowledge. Make the final call, document in DECISIONS.md. |
 | Coder escalates "pattern doesn't fit" | Forward to Tech Lead / Primary Architect for decision. If unsure, dispatch a web researcher for best practices. Document decision in DECISIONS.md. |
 | Build/tests fail after all tasks | Create targeted fix tasks. Only fix what's broken, don't redo completed work. |
@@ -1156,29 +1232,8 @@ When things go wrong, handle it yourself — don't involve the user:
 
 ## Key Rules
 
-- **Full autonomy** — you make ALL decisions, never ask the user for clarification
-- **Protect your context** — dispatch researchers instead of reading files yourself. You receive findings, not raw search results. Exception: `.conventions/` gold standards are short and you read them yourself.
-- **Researchers are EXPENSIVE — use only when needed.** Before spawning ANY researcher, ask: "Do I already have this information in my context (from brief, .conventions/, or prior conversation)?" If yes — DO NOT spawn a researcher. Researchers are for filling genuine knowledge gaps, not a default reflex. Typical cases where researchers are NOT needed: brief already has project context, .conventions/ has gold standards, the coder's question can be answered from your Phase 1 knowledge.
 - **Gold standards in every coder prompt** — coders MUST receive canonical examples as few-shot context. This is the #1 lever for code quality (+15-40% accuracy vs instructions alone).
-- **Coders self-check before review** — coders run convention checks themselves (Step 4) before requesting review. Lead does NOT check.
 - **Escalation, not silent deviation** — when a pattern doesn't fit, coders escalate to Tech Lead / Primary Architect, not silently deviate. Every approved deviation is documented in DECISIONS.md.
-- **Never implement tasks yourself** — you are the orchestrator only (delegate mode)
 - **One file = one coder** — never assign overlapping files to different coders
-- **Research only what you don't know** — see Step 2 decision algorithm. If brief/context already provides codebase info, skip codebase-researcher. If .conventions/ has gold standards, skip reference-researcher. Never dispatch researchers "just in case".
-- **Definition of Done** — define it from researcher findings + CLAUDE.md + conventions, include in DECISIONS.md
-- **Validate before executing** — Tech Lead (MEDIUM) or Architect debate (COMPLEX) reviews the plan before coders start. Skip for SIMPLE.
-- **Architect debate for COMPLEX** — 3 specialized architects (Frontend, Backend, Systems) debate the spec via SendMessage, converge, then transition to specialized reviewers. One becomes Primary Architect (DECISIONS.md, escalations, tiebreaker). Max 3 debate rounds — Lead breaks ties.
-- **Risk analysis before coding** — Tech Lead / Primary Architect identifies risks, risk testers verify them, mitigations added to tasks BEFORE code is written (skip for SIMPLE). Prevention > detection.
-- **Coders drive review** — coders send review requests directly to reviewers/architects via SendMessage. Lead is NOT in the review loop.
-- **Reviewers are permanent** — spawned eagerly at setup (Step 5), review ALL tasks throughout the session. For COMPLEX: architects serve as reviewers.
-- **Tech Lead is permanent (MEDIUM)** — spawned once, validates plan, reviews all tasks, handles escalations, maintains DECISIONS.md. For COMPLEX: replaced by 3 architects.
-- **Coders are temporary** — spawned per task, killed after completion
-- **Researchers are one-shot** — spawned for specific questions, return findings, done. Can be dispatched anytime.
-- **Enabling agents are one-shot** — spawned per trigger when files touch sensitive areas, not team members
-- **Integrated verification in Phase 3** — verify BEFORE shutting down the team. Spawn ci-verifier, browser-verifier, spec-verifier in parallel. If checks fail, coders fix while team is still alive (max 3 iterations). Present Human Checks to user after TeamDelete.
+- **Definition of Done** — defined in VERIFICATION_PLAN.md (the single "is it done?" document)
 - **Verify before shutdown** — all auto-checks must pass (or be exhausted after 3 fix attempts) before declaring completion
-- **Propose convention updates** — after every feature, check for recurring issues and new patterns. Propose `.conventions/` updates to the user.
-- **Coders collect approvals** — coders wait for all reviewers + tech-lead before committing, then report DONE to Lead
-- **State file for resilience** — update `.claude/teams/{team-name}/state.md` after every event. Read it to recover after compaction.
-- **Monitor mode in Phase 2** — Lead tracks DONE/STUCK/QUESTION signals. Does NOT read code, run checks, or relay messages.
-- **Lead as knowledge hub** — Lead has the richest context from Phase 1 research. Coders ask QUESTION when info is missing — Lead answers or dispatches researcher.

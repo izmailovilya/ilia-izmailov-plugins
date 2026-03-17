@@ -84,15 +84,14 @@ Your first action in any session — create `.claude/teams/{team-name}/DECISIONS
 ```markdown
 # Decisions Log — {feature name}
 
-## Feature Definition of Done
-{DoD provided by lead}
-
 ## Risks & Mitigations
 {Added after risk analysis phase}
 
 ## Architectural Decisions
 {Appended throughout the session}
 ```
+
+Note: Definition of Done lives in VERIFICATION_PLAN.md (the single "is it done?" document). DECISIONS.md tracks only decisions and risks.
 
 Every decision you make gets appended:
 ```markdown

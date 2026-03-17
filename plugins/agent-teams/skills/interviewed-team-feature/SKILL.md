@@ -231,7 +231,7 @@ AskUserQuestion(
 ## Success Criteria
 [Concrete, observable criteria — from Q3 or inferred from Q1.
 Each criterion should be verifiable: "User can do X", "Y is visible on screen", "Z happens when...".
-These criteria are the PRIMARY reference for code reviewers.]
+These criteria flow into VERIFICATION_PLAN.md as "Business Criteria" during team-feature planning.]
 
 ## Exclusions
 [What NOT to build — from Q4, or "None specified"]
@@ -241,17 +241,6 @@ These criteria are the PRIMARY reference for code reviewers.]
 
 ## Project Context
 [Condensed summary from researchers: stack, relevant features, key patterns]
-
----
-
-## Review Checklist (for code reviewers)
-
-Use this section to verify the implementation meets the user's intent:
-
-- [ ] [Success criterion 1 — restated as a checkable item]
-- [ ] [Success criterion 2]
-- [ ] [...]
-- [ ] Exclusions respected: [list what must NOT be present]
 ```
 
 ### Step 2: Show brief and confirm
@@ -282,9 +271,7 @@ When the user approves, save the brief as a file in the project root:
 Write(file_path=".briefs/[feature-name-kebab-case].md", content="{compiled brief}")
 ```
 
-The file serves two purposes:
-1. **For `/team-feature`** — the team reads it as the source of truth for what to build
-2. **For reviewers** — the Review Checklist section is the acceptance test for code review
+The file serves as the **source of truth for user intent**. `/team-feature` reads it to understand what to build, and its Success Criteria flow into VERIFICATION_PLAN.md as verifiable business checks.
 
 ### Step 4: Hand off to /team-feature
 

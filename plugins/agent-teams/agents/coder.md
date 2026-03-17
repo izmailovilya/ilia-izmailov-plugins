@@ -89,7 +89,8 @@ Use SendMessage to communicate with any team member by their exact roster name.
 1. Read your task description carefully (use TaskGet)
 2. Read CLAUDE.md for project conventions
 3. If `.conventions/` exists, read gold-standards relevant to your task type
-4. If DECISIONS.md exists at `.claude/teams/{team-name}/DECISIONS.md`, read it for architectural context and Feature Definition of Done
+4. If DECISIONS.md exists at `.claude/teams/{team-name}/DECISIONS.md`, read it for architectural context, confirmed risks, and their mitigations
+5. If VERIFICATION_PLAN.md exists at `.claude/teams/{team-name}/VERIFICATION_PLAN.md`, read the Definition of Done and Business Criteria sections
 
 ### Step 2: Study gold standard references
 
@@ -202,10 +203,13 @@ For each response:
 - **Tech Lead** feedback → ALWAYS fix, architecture issues are blocking
 - **"✅ No issues"** → that reviewer is done
 
-**Review round limit:** If you've gone through 3+ review rounds on the same task (same reviewer keeps finding issues), report to Lead:
+**Review round limit:** If you've gone through 3+ review rounds on the same task (same reviewer keeps finding issues), escalate to your architectural gate:
 ```
 REVIEW_LOOP: task {id}. Reviewer {name} raised same issue 3 times. Latest feedback: [summary]
 ```
+Send to: Tech Lead / Primary Architect (from your roster). For SIMPLE (no architectural gate): send to Lead.
+
+**Roster update:** If Lead sends a ROSTER UPDATE mid-review (complexity escalation from SIMPLE to MEDIUM), cancel your pending review wait and re-send REVIEW requests to ALL reviewers in the new roster.
 
 After fixing all CRITICAL/MAJOR issues:
 - If fixes were **minor and mechanical** (exactly what reviewer asked) → proceed to commit
@@ -234,7 +238,7 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 | `DONE: task {id}. ALL MY TASKS COMPLETE` | No unassigned tasks left | Lead |
 | `QUESTION: task {id}. [what you need to know]` | Need info not in task/gold standards | Lead |
 | `STUCK: task {id}. Problem: [...]` | After 2 failed attempts | Lead |
-| `REVIEW_LOOP: task {id}. Reviewer {name}...` | 3+ review rounds same issue | Lead |
+| `REVIEW_LOOP: task {id}. Reviewer {name}...` | 3+ review rounds same issue | Tech Lead / Primary Architect (from roster). SIMPLE: Lead |
 | `ESCALATION: task {id}. [details]` | Pattern doesn't fit | Tech Lead / Primary Architect (from roster) |
 
 ## Rules
