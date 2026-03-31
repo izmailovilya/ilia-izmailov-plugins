@@ -28,6 +28,12 @@
       "source": "./plugins/team-research",
       "description": "Launch a team of AI agents for deep parallel codebase research — causal understanding, not just coverage",
       "version": "1.0.0"
+    },
+    {
+      "name": "repo-scout",
+      "source": "./plugins/repo-scout",
+      "description": "Scout open-source repos for patterns and ideas to improve your own product",
+      "version": "0.1.0"
     }
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "name": "repo-scout",
+  "version": "0.1.0",
+  "description": "Scout open-source repos for patterns and ideas to improve your own product",
+  "author": {
+    "name": "Ilia Izmailov",
+    "url": "https://github.com/izmailovilya"
+  },
+  "keywords": [
+    "github",
+    "patterns",
+    "competitive-analysis",
+    "open-source",
+    "research"
+  ]
+}
