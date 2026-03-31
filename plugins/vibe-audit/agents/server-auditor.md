@@ -12,7 +12,7 @@ description: |
   assistant: "Запускаю server-auditor для аудита tRPC роутеров и сервисов"
   </example>
 
-model: opus
+model: sonnet
 tools:
   - Glob
   - Grep

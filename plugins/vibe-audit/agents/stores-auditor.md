@@ -6,7 +6,7 @@ description: |
   "audit stores", "find unused stores", "clean up state management",
   "check Zustand stores".
 
-model: opus
+model: sonnet
 tools:
   - Glob
   - Grep

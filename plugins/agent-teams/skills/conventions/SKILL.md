@@ -1,6 +1,6 @@
 ---
 name: conventions
-description: "Analyze codebase and create/update .conventions/ directory with gold standards, anti-patterns, and checks"
+description: "Analyze codebase and create/update .conventions/ directory with gold standards, anti-patterns, and checks. Use this skill when the user asks to 'set up conventions', 'create coding standards', 'extract patterns from the codebase', 'document how code should be written', 'create gold standards', 'establish code style', or wants to ensure consistent code quality across the project. Also use when starting work on a new codebase that lacks a .conventions/ directory — conventions are the foundation for all agent-teams code quality."
 allowed-tools:
   - Read
   - Grep
@@ -148,3 +148,7 @@ Total: N files created, M files updated
 - Do NOT invent patterns — only document what actually exists in the codebase
 - If the codebase is inconsistent (50/50 split), pick the better pattern and note the inconsistency in an anti-pattern file
 - Skip categories that don't apply (no DB? skip DB gold standard)
+
+## Reference Files
+
+- **`references/examples.md`** — Example convention files showing the expected format and quality level for gold standards, anti-patterns, and checks. Read this before generating convention files to ensure consistent quality and format.

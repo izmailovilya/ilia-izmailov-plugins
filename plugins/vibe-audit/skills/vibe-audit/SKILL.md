@@ -1,6 +1,6 @@
 ---
 name: vibe-audit
-description: Interactive feature audit — finds dead code and experiments, asks if they're needed
+description: "Interactive feature audit — finds dead code, unused experiments, and abandoned features through conversation. Use this skill when the user asks to 'clean up the project', 'find dead code', 'audit the codebase', 'what can we delete', 'find unused code', 'project cleanup', 'remove old experiments', or wants to reduce codebase bloat. Especially useful for vibe-coded projects where experimental code accumulates. Also use when the user notices the project has grown messy, has files they're not sure about, or wants to understand what's actively used vs abandoned."
 allowed-tools:
   - Task
   - Read

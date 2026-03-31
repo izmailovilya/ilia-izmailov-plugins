@@ -1,6 +1,6 @@
 ---
 name: team-research
-description: Launch Agent Team for parallel deep codebase/topic research — causal understanding, not just coverage
+description: "Launch Agent Team for parallel deep codebase/topic research — causal understanding, not just coverage. Use this skill whenever the user asks to 'research the codebase', 'understand how X works', 'investigate', 'explore architecture', 'analyze the codebase', 'how does this work', 'deep dive into', 'trace how data flows', or needs thorough multi-angle investigation of code, architecture, or any technical topic. Also use when the user asks a complex question about the codebase that requires reading multiple files across different areas — a single grep won't cut it. Prefer this over ad-hoc exploration when the question spans multiple modules or needs causal understanding (WHY something exists, not just WHAT exists)."
 allowed-tools:
   - TeamCreate
   - TeamDelete
@@ -15,6 +15,7 @@ allowed-tools:
   - Grep
   - Bash
 argument-hint: "<research question or topic>"
+model: opus
 ---
 
 # Team Research — Deep Investigation

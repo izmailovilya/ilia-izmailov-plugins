@@ -12,7 +12,7 @@ description: |
   assistant: "Запускаю features-auditor для анализа неиспользуемых экспортов и дубликатов"
   </example>
 
-model: opus
+model: sonnet
 tools:
   - Glob
   - Grep
