@@ -45,7 +45,7 @@ The main workflow is `/interviewed-team-feature` — a short adaptive interview 
 
 ### expert-arena
 
-Expert debate arena — real experts argue organically and converge on optimal solutions for any domain.
+Expert evaluation arena — real experts independently assess options with cross-enrichment for any domain.
 
 > **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/agent-teams/README.md#prerequisites)
 
@@ -59,9 +59,47 @@ Expert debate arena — real experts argue organically and converge on optimal s
 /expert-arena "Best pricing strategy for a developer tool?"
 ```
 
-Selects 3-5 real experts with opposing viewpoints, gathers context via researchers, launches organic peer-to-peer debates with live commentary, and synthesizes results into a structured document with verdict and recommendations.
+Selects 3-5 real experts with opposing viewpoints, gathers context via researchers, launches independent evaluations with cross-enrichment, and produces an action-oriented report: verdict first, action plan second, detailed analysis for those who want to dig deeper.
 
 [Read more →](./plugins/expert-arena/README.md)
+
+---
+
+### team-research
+
+Deep parallel codebase research — causal understanding, not just coverage.
+
+> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment.
+
+```bash
+/plugin install team-research@ilia-izmailov-plugins
+```
+
+**Usage:**
+```
+/team-research "How does authentication work in this project?"
+/team-research "Full architecture review"
+```
+
+Spawns a scout to map the landscape, then 2-7 investigators explore independent angles in parallel, followed by an adversarial challenger who stress-tests the findings. Produces a research report with causal understanding, source confidence tags, and cross-cutting insights.
+
+---
+
+### repo-scout
+
+Scout open-source repos for patterns and ideas to improve your own product.
+
+```bash
+/plugin install repo-scout@ilia-izmailov-plugins
+```
+
+**Usage:**
+```
+/repo-scout https://github.com/anomalyco/opencode
+/repo-scout https://github.com/vercel/ai "how they handle streaming"
+```
+
+Two-phase approach: first understands YOUR project (2 scouts), then explores the external repo with your context (2 scouts), then adversarial challenge (2 challengers verify patterns are real and worth adopting). Only recommendations that survive the challenge make it into the final report.
 
 ---
 
