@@ -452,6 +452,106 @@ Include the debate summary in DECISIONS.md."
 
 **If architects don't converge after 3 rounds:** Lead reads their final positions, makes the decision, applies changes, and picks Primary. Document the disagreement in DECISIONS.md.
 
+## Step 4a: Design Options (when UX or architectural decisions exist)
+
+After the plan is validated but before risk analysis, check if any tasks involve **UX or architectural decisions** that the user should weigh in on. This step exists because some choices fundamentally shape implementation — picking them wrong means rework, not just bugs.
+
+**When to trigger:** Scan task descriptions for signals:
+- UI layout choices (page structure, navigation, forms)
+- User flow decisions (onboarding, auth, checkout steps)
+- Architectural forks (REST vs WebSocket, polling vs push, monolith vs split)
+- Data model choices that affect UX (what entities exist, how they relate)
+- Integration decisions (which services, which auth methods)
+
+**When to skip:** Pure backend tasks, refactoring, bug fixes, or when the brief/interview already specified exact requirements with no ambiguity.
+
+### How to present options
+
+For each decision point, present 2-3 concrete options with visual schemas.
+
+**For UX decisions — ASCII wireframes:**
+
+```
+AskUserQuestion(
+  questions=[{
+    "question": "[What the decision is about — in simple terms]",
+    "header": "[Short label]",
+    "options": [
+      {
+        "label": "[Option 1 name]",
+        "description": "[What this means + ASCII wireframe if it fits in 3-5 lines]\n\n┌─────────────┐\n│   Email     │\n│ [Get link]  │\n│ ── or ──    │\n│ [Telegram]  │\n└─────────────┘"
+      },
+      {
+        "label": "[Option 2 name]",
+        "description": "[What this means + wireframe]"
+      },
+      {
+        "label": "[Option 3 name]",
+        "description": "[What this means + wireframe]"
+      }
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+**For architectural decisions — flow diagrams:**
+
+If the schema is too complex for AskUserQuestion description fields (more than 5-6 lines), draw it in the chat first, then ask:
+
+```
+Present in chat:
+
+## Option A: Polling
+  Client ──GET /status──▶ Server ──▶ DB
+  Client ◀──200 JSON────── Server
+  (repeat every 5s)
+
+## Option B: WebSocket
+  Client ◀═══ws═══▶ Server ──▶ DB
+  (real-time push, persistent connection)
+
+## Option C: SSE
+  Client ◀──stream──── Server ──▶ DB
+  (server pushes, client listens, HTTP-based)
+
+Then:
+AskUserQuestion(
+  questions=[{
+    "question": "Which approach fits better for real-time updates?",
+    "header": "Architecture",
+    "options": [
+      {"label": "Polling", "description": "Simplest. Works everywhere. 5s delay."},
+      {"label": "WebSocket", "description": "Instant. But needs infrastructure (connection management, reconnect)."},
+      {"label": "SSE", "description": "Middle ground. Real-time over HTTP. Already used in chat streaming."}
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+### Rules
+
+- **Max 3 decision points per feature.** If there are more, bundle related ones or make the call yourself for less important ones.
+- **Always show 2-3 options, never 1.** If there's only one viable option, don't ask — just do it.
+- **Explain trade-offs, not implementation details.** The user is deciding WHAT, not HOW. "Faster but harder to change later" > "Uses Redis pub/sub with TTL-based expiration."
+- **Include a "Your call" option** if the decision is purely technical and the user might not care.
+- **After user picks:** Update the relevant task descriptions with the chosen approach (TaskUpdate). Add the decision to DECISIONS.md if it exists.
+- **Wireframes should be rough and fast** — box-drawing characters, simple text layout. Not art. Enough to see the structure.
+
+### Example wireframe vocabulary
+
+```
+Page layouts:           Flow diagrams:          Data relationships:
+┌───────────────┐       A ──▶ B ──▶ C          User ──1:N──▶ Project
+│  Header       │       A ──▶ B                 Project ──1:N──▶ Entity
+├───────────────┤            └──▶ C             Entity ──M:N──▶ Tag
+│ Sidebar │ Main│       
+│         │     │       States:
+│         │     │       [Draft] ──▶ [Active] ──▶ [Archived]
+└───────────────┘              └──▶ [Deleted]
+```
+
 ## Step 4b: Risk Analysis (MEDIUM and COMPLEX only)
 
 After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run a pre-implementation risk analysis.

@@ -106,6 +106,8 @@ Execute these steps in order:
 
 4. **Validate plan** — SIMPLE: skip. MEDIUM: Tech Lead validates. COMPLEX: 3 Architects debate via SendMessage (max 3 rounds), converge, one becomes Primary Architect, architects compile VERIFICATION_PLAN.md.
 
+4a. **Design options** (when UX or architectural decisions exist) — scan tasks for decisions the user should weigh in on. Present 2-3 options with ASCII wireframes (UX) or flow diagrams (architecture) via AskUserQuestion. Max 3 decision points per feature. Update tasks with chosen approach. Skip for pure backend/refactoring work.
+
 4b. **Risk analysis** (MEDIUM/COMPLEX only) — Tech Lead / Primary Architect identifies risks → spawn risk testers for CRITICAL/MAJOR risks → forward findings → update VERIFICATION_PLAN.md with mitigations.
 
 5. **Spawn team** — reviewers (or switch architects to review mode) + coders with gold standard block + write state.md for compaction resilience.
