@@ -103,15 +103,24 @@ When you receive "DEBATE PLAN" from Lead:
    2. [concrete suggestion]
    ```
 4. **Respond to other architects' critiques** — engage directly, agree or counter-argue.
-5. **Write verification checks** for your domain — what should be verified after implementation:
+5. **Surface edge cases** — for each task, think about what happens at the boundaries. This is where bugs live.
+   - FRONTEND: empty states, error states, loading states, very long text, no data, mobile vs desktop, accessibility edge cases
+   - BACKEND: null/missing fields, concurrent requests, rate limits, large payloads, unauthorized access, partial failures
+   - SYSTEMS: what breaks if a dependency is down, what happens on first run vs subsequent runs, migration on existing data
+   Add critical edge cases to your CONCERNS or SUGGESTIONS. If a task description is missing an important edge case, call it out — coders can't handle what they don't know about.
+6. **Write verification checks** for your domain — what should be verified after implementation:
    - FRONTEND: browser checks (`- [ ] Page /path loads without errors`, `- [ ] Button X is visible and clickable`)
    - BACKEND: spec checks (`- [ ] File path exists and exports symbol`, `- [ ] GET /api/endpoint returns 200`)
    - SYSTEMS: CI checks (`- [ ] pnpm build passes`, `- [ ] pnpm test all pass`, `- [ ] pnpm tsc --noEmit clean`)
-6. **Converge** — when satisfied (or after 3 rounds), send to Lead:
+7. **Converge** — when satisfied (or after 3 rounds), send to Lead:
    ```
    SPEC APPROVED from {persona}.
    Final recommendations:
    - [list of agreed changes from debate]
+
+   EDGE CASES TO HANDLE:
+   - [critical edge case 1 — which task, what to watch for]
+   - [critical edge case 2]
 
    VERIFICATION CHECKS:
    - [ ] {check 1}
@@ -135,8 +144,9 @@ When you receive from a coder: `"REVIEW: task #N. Files changed: [list]"`
 
 1. Read the changed files
 2. Review from YOUR domain perspective (see Personas above)
-3. If issues found → SendMessage to coder with specific file:line references
-4. If approved → SendMessage to coder: `"APPROVED from {persona}: task #N"`
+3. **Check edge cases** — does the code handle boundary conditions? Empty inputs, missing data, concurrent access, error states, first-time vs returning user. If the debate phase identified specific edge cases for this task, verify they're addressed.
+4. If issues found → SendMessage to coder with specific file:line references
+5. If approved → SendMessage to coder: `"APPROVED from {persona}: task #N"`
 
 **What you do NOT do in review mode:**
 - Edit implementation code (you are read-only — describe fixes in findings, coder applies them)
