@@ -231,9 +231,12 @@ Conventions:
   .conventions/ updated: Y/N
   Files: [list]
 
-Definition of Done: met / partial
+Definition of Done: {static criteria met / partial}
+Runtime verification: {N/A if no human checks | PENDING — see Human Checks below}
 ══════════════════════════════════════════════════
 ```
+
+**Do NOT stop here.** Always proceed to Step 7 (shutdown) and Step 8 (Human Checks) — the user needs the full checklist in the same turn, not after prompting.
 
 ## 7. Shutdown Team
 
@@ -245,28 +248,86 @@ Definition of Done: met / partial
 
 ## 8. Present Human Checks to User
 
-If any items need human verification, use AskUserQuestion:
+**This step is mandatory whenever any Human Checks, BROKEN, SKIP, UNCLEAR, or unresolved FAIL items exist.** The user must see the full actionable checklist in this same turn — never stop at "Human Checks below" without showing them.
+
+### Step 8a — Print the detailed checklist IN CHAT (not inside AskUserQuestion)
+
+Render as a numbered, step-by-step checklist so the user can follow it without asking a follow-up. Group by stage if multiple phases are involved (deploy → observe → verify).
+
+Template:
 
 ```
-"Feature implemented and verified. {N} items need your manual check:"
+══════════════════════════════════════════════════
+HUMAN CHECKS — what you need to do
+══════════════════════════════════════════════════
 
-For BROKEN items:
-  "Environment issues — {N} checks couldn't run due to {reason}"
+{One-line summary: "Team is done statically. {N} things still need human eyes."}
 
-For SKIP(capability) + UNCLEAR + DEGRADED items:
-  "{N} checks couldn't be verified automatically:"
-  {list items with context and instructions}
+{If changes touch deploy/runtime, structure as stages:}
 
-For unresolved FAIL items (after 3 fix attempts):
-  "{N} checks still failing after 3 fix attempts:"
-  {list with evidence and retry trace}
+### Stage 1 — Deploy ({estimated time})
+Command: `{exact command}`
+What happens: {one sentence — what the deploy does}
+How to know it's done: {specific signal — "GitHub Actions green", "service restarts"}
 
-Options:
-- "All good — verified manually"
-- "Will check later"
+### Stage 2 — Observe on {env} ({time window})
+Watch for specific signals:
+- [ ] {Specific log line / metric / behavior to look for} — means {what it confirms}
+- [ ] {Absence of specific error pattern} — e.g., "no `{error text}` in last {N} minutes"
+- [ ] {Specific endpoint / UI flow to hit manually}
+
+### Stage 3 — Sanity checks ({time window})
+- [ ] {User flow 1 to try end-to-end}
+- [ ] {User flow 2}
+- [ ] {Rollback command ready if needed}: `{command}`
+
+{If simpler — just list items directly:}
+
+- [ ] {Check 1 with concrete instructions}
+- [ ] {Check 2 with concrete instructions}
+
+### What "good" looks like
+{2-3 bullets describing the positive signals the user should see}
+
+### If something looks wrong
+- Rollback: `{command}`
+- Logs: `{command or dashboard URL}`
+- Ping me in chat with the error — I can investigate
+
+══════════════════════════════════════════════════
 ```
 
-If ALL checks passed with no human checks → skip AskUserQuestion, just report success:
+**Populating the checklist** — pull items from:
+- VERIFICATION_PLAN.md `## Human Checks` section
+- BROKEN items (environment issues)
+- SKIP(capability) + UNCLEAR + DEGRADED items
+- Unresolved FAIL items (after 3 fix attempts)
+
+If the VERIFICATION_PLAN's Human Checks are vague ("deploy and watch logs"), **expand them here into concrete stages** based on what the feature actually touches. Look at the commits — if they touch deploy config, billing, pg-boss, auth middleware, database migrations, etc., generate stage-specific checks (exact log lines, error patterns, user flows). Do not output generic "watch logs" without specifics.
+
+### Step 8b — Follow up with AskUserQuestion
+
+After printing the checklist, ask:
+
+```
+AskUserQuestion(
+  questions=[{
+    "question": "Ready to run the checklist? I can help with any stage.",
+    "header": "Human checks",
+    "options": [
+      {"label": "Start Stage 1 now", "description": "Run the deploy command"},
+      {"label": "Walk me through it", "description": "Go stage by stage with me"},
+      {"label": "I'll do it myself later", "description": "Park the checklist, report back when done"}
+    ],
+    "multiSelect": false
+  }]
+)
+```
+
+### When no human checks are needed
+
+If ALL checks passed and there are zero human-check items — skip Step 8 entirely and print:
+
 ```
 ALL CHECKS PASSED — feature fully verified, no manual checks needed.
 ```

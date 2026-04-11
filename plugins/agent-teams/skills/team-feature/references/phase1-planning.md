@@ -203,11 +203,19 @@ Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
 - [ ] {config/API/structural checks from acceptance criteria}
 
 ## Human Checks
-- [ ] {Anything that can't be automated}
-  → {Step-by-step instructions for manual verification}
+- [ ] {Concrete item — NEVER "deploy and watch logs"}
+  → {Step-by-step instructions: exact command, exact signal, exact time window}
 ```
 
 How to populate: Definition of Done from technical quality bar + CLAUDE.md, Business Criteria from brief's Success Criteria, Build/Tests from researcher findings, Browser Checks from UI criteria, Spec Checks from acceptance criteria, Human Checks for anything requiring judgment. Risk Mitigation Checks are added after Step 4b.
+
+**Human Checks quality bar — no vague items allowed.** If tasks touch deploy config, infrastructure, billing, background jobs (pg-boss, queues), database migrations, auth middleware, or anything that only shows up at runtime, every Human Check must be a *concrete* item with:
+- Exact command or action (e.g., `/deploy-dev`, not "deploy it")
+- Specific signal to look for (e.g., "log line `PgBoss: Worker instance started` appears", not "check logs")
+- Time window (e.g., "watch for 10 minutes", not "monitor briefly")
+- Failure pattern to reject (e.g., "no `ECONNREFUSED to db-02` in last 10 min")
+
+Vague placeholders like "deploy and verify it works" are banned — they force the user to ask "what exactly should I check?" during Phase 3.
 
 **For COMPLEX** — skip writing VERIFICATION_PLAN.md here. Architects populate it during the debate phase (Step 4c) — each adds checks from their domain expertise.
 
