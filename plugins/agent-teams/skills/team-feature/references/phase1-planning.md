@@ -460,6 +460,49 @@ Include the debate summary in DECISIONS.md."
 
 **If architects don't converge after 3 rounds:** Lead reads their final positions, makes the decision, applies changes, and picks Primary. Document the disagreement in DECISIONS.md.
 
+### Step 4c-4: MANDATORY Plan Brief to User (HARD GATE — COMPLEX)
+
+**This is not optional.** After architects converge (or Lead breaks a deadlock), the user has been silent since the interview/brief. They have NO idea what the architects debated, what was decided, what tradeoffs were made, or what the team is about to build. Before moving to risk analysis or Step 4a, Lead MUST present a short human-readable brief to the user in chat.
+
+Print to chat (not inside AskUserQuestion):
+
+```
+══════════════════════════════════════════════════
+PLAN READY — architects converged
+══════════════════════════════════════════════════
+
+Feature: {feature name}
+Complexity: COMPLEX ({N} architects, {M} rounds of debate)
+
+## Tasks ({N} total)
+1. {task title} — {one-line intent}
+2. {task title} — {one-line intent}
+...
+
+## Key decisions from architect debate
+- {decision 1 — what was chosen and why, 1-2 sentences}
+- {decision 2}
+- {decision 3}
+(Cite the architect persona that drove each: "Backend Architect: chose X over Y because Z")
+
+## What this will change in the codebase
+- {files/modules most affected, 2-3 bullets}
+- {migrations / schema / infra changes, if any}
+
+## What's NOT in scope
+{From brief's Exclusions + anything architects explicitly deferred}
+
+## Open questions for you
+{If any — list them. Otherwise say "None — proceeding to Step 4a design options if applicable."}
+══════════════════════════════════════════════════
+```
+
+After printing this brief, immediately proceed to Step 4a (design options). The brief exists so the user can (a) interrupt if something is wrong, and (b) have context for the Step 4a buttons that follow.
+
+**For MEDIUM:** Run a shorter version of this same checkpoint after Tech Lead validates the plan. Print a 5-8 line summary: "Plan validated. Tasks: ... Key approach: ... Proceeding to risk analysis." The user still needs to see *something* after Tech Lead review.
+
+**For SIMPLE:** Skip this checkpoint — SIMPLE features are small enough that the upfront task list is sufficient.
+
 ## Step 4a: Design Options (when UX or architectural decisions exist)
 
 After the plan is validated but before risk analysis, check if any tasks involve **UX or architectural decisions** that the user should weigh in on. This step exists because some choices fundamentally shape implementation — picking them wrong means rework, not just bugs.

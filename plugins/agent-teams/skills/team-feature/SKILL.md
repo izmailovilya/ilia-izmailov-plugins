@@ -37,11 +37,14 @@ Team Lead orchestrating feature implementation. Coordinate researchers, coders, 
 **BUT — the user MUST be consulted for user-facing forks.** Autonomy is about *how*, not *what*. When tasks involve UX layout, user flow, or architectural forks that fundamentally shape the product (polling vs websocket, split vs unified resource, wireframe choices), Lead is REQUIRED to run Step 4a and present 2-3 concrete options via `AskUserQuestion`. Picking these wrong means rework, not just bugs — that's not a call Lead makes alone.
 
 The only reasons to contact the user:
-1. **Step 4a design forks** — user-facing or architectural decisions (see `phase1-planning.md` Step 4a). This is a HARD requirement, not optional.
-2. **Step 8 Human Checks** — post-verification checklist for things the team can't verify automatically (runtime behavior, deploy observation). Always present as a detailed actionable checklist.
-3. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context).
+1. **Step 4c-4 Plan Brief (COMPLEX/MEDIUM)** — after architects/Tech Lead validate the plan, Lead MUST print a short human-readable brief to chat: tasks, key decisions, affected files, out-of-scope. The user has been silent since the brief/interview — they need to see what the team decided before implementation starts. Not a question, a status report. HARD GATE.
+2. **Step 4a design forks** — user-facing or architectural decisions (see `phase1-planning.md` Step 4a). This is a HARD requirement, not optional.
+3. **Step 8 Human Checks** — post-verification checklist for things the team can't verify automatically (runtime behavior, deploy observation). Always present as a detailed actionable checklist.
+4. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context).
 
 Everything else — researchers, not the user.
+
+**Do not confuse autonomy with silence.** Autonomy means Lead decides without asking permission. It does NOT mean Lead works in a black box and never surfaces progress. After every major phase gate (plan validated, risks analyzed, implementation done, verification done), the user gets a concise update in chat. If the user doesn't hear from Lead between "starting" and "done", Lead is doing it wrong.
 
 **Context is precious.** Lead is the brain of the team. Don't waste context on raw file contents and search results. Dispatch researchers and receive condensed summaries.
 
@@ -112,6 +115,8 @@ Execute these steps in order:
 3. **Classify complexity** — mechanical algorithm with MEDIUM triggers (6 checks) and COMPLEX triggers (7 checks). Not overridable. Create team, write VERIFICATION_PLAN.md (SIMPLE/MEDIUM) or defer to architects (COMPLEX). Compile gold standard block for coders. Create tasks with acceptance criteria + convention checks.
 
 4. **Validate plan** — SIMPLE: skip. MEDIUM: Tech Lead validates. COMPLEX: 3 Architects debate via SendMessage (max 3 rounds), converge, one becomes Primary Architect, architects compile VERIFICATION_PLAN.md.
+
+4c-4. **Plan Brief to User — HARD GATE (COMPLEX/MEDIUM)**. After plan validation, Lead MUST print a short status brief to chat: task list, key decisions from the architect debate (or Tech Lead review), files/modules affected, out-of-scope, open questions. This is NOT a question — it's a status report so the user knows what the team decided before implementation begins. The user has been silent since the brief/interview — break the silence here. SIMPLE skips this. See `phase1-planning.md` Step 4c-4.
 
 4a. **Design options — REQUIRED SCAN** (skip only for pure refactoring/bug fixes). Scan every task for UX or architectural forks: UI layout, user flow, REST vs WebSocket, split vs unified resource, data model shape, integration choice. For every fork found, present 2-3 concrete options via `AskUserQuestion` with ASCII wireframes (UX) or flow diagrams (architecture). Max 3 decision points per feature. Update task descriptions with chosen approach and log in DECISIONS.md. **Do NOT skip this step silently** — if no forks were found, state explicitly in the run log: "Step 4a: scanned N tasks, no user-facing forks detected."
 
