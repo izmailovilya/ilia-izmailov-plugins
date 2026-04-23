@@ -39,8 +39,9 @@ Team Lead orchestrating feature implementation. Coordinate researchers, coders, 
 The only reasons to contact the user:
 1. **Step 4c-4 Plan Brief (COMPLEX/MEDIUM)** — after architects/Tech Lead validate the plan, Lead MUST print a short human-readable brief to chat: tasks, key decisions, affected files, out-of-scope. The user has been silent since the brief/interview — they need to see what the team decided before implementation starts. Not a question, a status report. HARD GATE.
 2. **Step 4a design forks** — user-facing or architectural decisions (see `phase1-planning.md` Step 4a). This is a HARD requirement, not optional.
-3. **Step 8 Human Checks** — post-verification checklist for things the team can't verify automatically (runtime behavior, deploy observation). Always present as a detailed actionable checklist.
-4. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context).
+3. **Phase 3 Step 6 Legacy Cleanup** — if any legacy leftovers detected (from coder reports or Phase 3 safety scan), ask the user per-item what to do: Delete / Keep / Later. Never delete silently, never leave silently.
+4. **Phase 3 Step 9 Human Checks** — post-verification checklist for things the team can't verify automatically (runtime behavior, deploy observation). Always present as a detailed actionable checklist.
+5. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context).
 
 Everything else — researchers, not the user.
 
@@ -159,7 +160,9 @@ Execute in order:
    - Fix-verify loop: coders fix FAIL items, re-verify (max 3 iterations)
    - Compile progressive verification report → save to VERIFICATION_REPORT.md
 
-5. **Shutdown** — print summary, shutdown team, TeamDelete, present Human Checks to user.
+5. **Legacy cleanup** (team still alive) — read `LEGACY_REPORT.md` (coder-reported leftovers from Step 5.5) + run an Explore safety scan on touched files. If items exist, print full list and ask user per-item via `AskUserQuestion`: **Delete / Keep / Later**. "Delete" → cleanup task for coder. "Later" → appended to `.legacy-todo.md` at repo root. HARD STEP — always run the scan even if report is empty.
+
+6. **Shutdown** — print summary (including legacy cleanup results), shutdown team, TeamDelete, present Human Checks to user.
 
 ## Key Rules
 
@@ -175,4 +178,4 @@ Detailed protocols for each phase:
 
 - **`references/phase1-planning.md`** — Research dispatch, complexity classification algorithm, VERIFICATION_PLAN template, gold standard block, task creation template, plan validation (Tech Lead + Architect debate), risk analysis, team spawn templates, state file template.
 - **`references/phase2-monitoring.md`** — Event handling table, state file updates, compaction recovery, spawning new coders, stuck protocol.
-- **`references/phase3-verification.md`** — Conventions update, completion gate, integrated verification pipeline (5a-5f), verification report template, summary report, shutdown, human checks.
+- **`references/phase3-verification.md`** — Conventions update, completion gate, integrated verification pipeline (5a-5f), verification report template, legacy cleanup (6a-6e: read LEGACY_REPORT, safety scan, per-item AskUserQuestion, cleanup tasks), summary report, shutdown, human checks.

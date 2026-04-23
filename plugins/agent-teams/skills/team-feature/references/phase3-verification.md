@@ -203,7 +203,130 @@ Action: {what to fix}
 
 Save report to `.claude/teams/{team-name}/VERIFICATION_REPORT.md`
 
-## 6. Summary Report
+## 6. Legacy Cleanup (team is still alive — coders can remove legacy)
+
+**This step is MANDATORY.** Do not skip it even if `LEGACY_REPORT.md` looks empty — always run the scan for safety. The user must have a chance to decide what happens to legacy code before the team is shut down.
+
+### 6a. Read coder-reported legacy
+
+```
+Read(".claude/teams/{team-name}/LEGACY_REPORT.md")
+```
+
+Coders appended entries here during Step 5.5 of their workflow. Parse all `## [task #N] ...` entries into a list.
+
+### 6b. Run a safety scan for legacy coders missed
+
+Dispatch a single Explore subagent to catch what coders might have missed. Give it the list of files touched this session (from commits or state.md):
+
+```
+Task(
+  subagent_type="Explore",
+  description="Scan for legacy leftovers",
+  prompt="Scan the following files touched during this session for legacy code left behind after refactoring:
+{list of files touched this session}
+
+Check for each category (from CLAUDE.md legacy rules):
+1. Unused imports, variables, functions, or files (grep for references to each exported symbol)
+2. Duplicate implementations side-by-side (old + new version of the same function)
+3. Dead code paths behind feature flags or `if (OLD_BEHAVIOR)` branches
+4. Comments marking deprecation: `// deprecated`, `// TODO remove`, `// old`
+5. Hardcoded fallbacks to old logic
+6. Migration scripts / shims no longer needed
+
+For each finding, output:
+- Where: file:line
+- What: one sentence
+- Evidence: grep result showing usage count (e.g., '0 references', '2 references — one in tests')
+- Suggested action: delete / keep / investigate
+
+Thoroughness: medium. Under 3 minutes. Report findings concisely — max 10 items, prioritize highest-confidence dead code."
+)
+```
+
+Append the scan findings to `LEGACY_REPORT.md` under a separate section `## From Phase 3 safety scan`.
+
+### 6c. Decide with the user
+
+**If LEGACY_REPORT.md is empty after the scan** (no coder reports + no scan findings):
+Print to chat: `Legacy cleanup: nothing to review — no legacy leftovers detected.` Skip to Step 7 (Summary Report).
+
+**If items exist**, print the full list in chat (human-readable, numbered):
+
+```
+══════════════════════════════════════════════════
+LEGACY DETECTED — what to do with each item?
+══════════════════════════════════════════════════
+
+Found {N} legacy item(s) left after implementation:
+
+1. **{title}** ({source: coder-N / scan})
+   Where: `{file}:{line}`
+   What: {description}
+   Still used? {yes/no/unclear — with evidence}
+   Why it's here: {reason from coder or "detected by scan"}
+
+2. **{title}** ...
+...
+══════════════════════════════════════════════════
+```
+
+Then ask the user. Use **one AskUserQuestion call with one question per item** (max 5 questions per call — if more items, batch into multiple calls):
+
+```
+AskUserQuestion(
+  questions=[
+    {
+      "question": "Item 1: {short title} at {file}:{line}. What to do?",
+      "header": "Legacy #1",
+      "options": [
+        {"label": "Delete", "description": "Coder removes it now (creates cleanup task, goes through review)"},
+        {"label": "Keep", "description": "Leave as is — it's needed or safer to keep"},
+        {"label": "Later", "description": "Save to .legacy-todo.md at repo root for future cleanup"}
+      ],
+      "multiSelect": false
+    },
+    { ... item 2 ... },
+    ...
+  ]
+)
+```
+
+### 6d. Apply user decisions
+
+For each item based on the user's choice:
+
+**"Delete" items** → create a single cleanup task bundling all delete items:
+```
+TaskCreate(
+  subject="Cleanup legacy after feature completion",
+  description="Remove the following legacy items approved by user:
+
+{list of items to delete with file:line and description}
+
+Do NOT remove anything not on this list. Run self-checks + request review as usual. Commit with: 'chore: cleanup legacy after {feature-name}'"
+)
+```
+
+Assign to a coder (spawn a fresh coder if all current ones are shut down, or reuse an active one). Wait for DONE. Reviewers must approve.
+
+**"Later" items** → append to `.legacy-todo.md` at repo root (create the file if missing):
+```
+Edit / Write (.legacy-todo.md):
+
+## {YYYY-MM-DD} — deferred from feature "{feature name}"
+
+- [ ] `{file}:{line}` — {description} (still used? {yes/no/unclear})
+- [ ] `{file}:{line}` — ...
+```
+
+**"Keep" items** → no action, just log in summary report.
+
+### 6e. Re-run verification if Delete tasks were created
+
+If cleanup tasks were run, re-run the relevant checks from VERIFICATION_PLAN.md (build, types, tests) to make sure nothing broke. This reuses Step 5e fix-verify loop machinery. Max 2 iterations for cleanup fixes.
+
+## 7. Summary Report
 
 Print the summary (includes verification):
 ```
@@ -227,6 +350,10 @@ Verification:
   Fix-verify iterations: {N}/3
   Human checks remaining: {N}
 
+Legacy cleanup:
+  Items found: {N} (coder reports: {X} + scan: {Y})
+  Deleted now: {N} | Kept: {N} | Saved to .legacy-todo.md: {N}
+
 Conventions:
   .conventions/ updated: Y/N
   Files: [list]
@@ -236,9 +363,9 @@ Runtime verification: {N/A if no human checks | PENDING — see Human Checks bel
 ══════════════════════════════════════════════════
 ```
 
-**Do NOT stop here.** Always proceed to Step 7 (shutdown) and Step 8 (Human Checks) — the user needs the full checklist in the same turn, not after prompting.
+**Do NOT stop here.** Always proceed to Step 8 (shutdown) and Step 9 (Human Checks) — the user needs the full checklist in the same turn, not after prompting.
 
-## 7. Shutdown Team
+## 8. Shutdown Team
 
 - SendMessage(type="shutdown_request") to all permanent teammates:
   - MEDIUM: Tech Lead + security-reviewer + logic-reviewer + quality-reviewer
@@ -246,11 +373,11 @@ Runtime verification: {N/A if no human checks | PENDING — see Human Checks bel
   - SIMPLE: unified-reviewer
 - TeamDelete
 
-## 8. Present Human Checks to User
+## 9. Present Human Checks to User
 
 **This step is mandatory whenever any Human Checks, BROKEN, SKIP, UNCLEAR, or unresolved FAIL items exist.** The user must see the full actionable checklist in this same turn — never stop at "Human Checks below" without showing them.
 
-### Step 8a — Print the detailed checklist IN CHAT (not inside AskUserQuestion)
+### Step 9a — Print the detailed checklist IN CHAT (not inside AskUserQuestion)
 
 Render as a numbered, step-by-step checklist so the user can follow it without asking a follow-up. Group by stage if multiple phases are involved (deploy → observe → verify).
 
@@ -305,7 +432,7 @@ Watch for specific signals:
 
 If the VERIFICATION_PLAN's Human Checks are vague ("deploy and watch logs"), **expand them here into concrete stages** based on what the feature actually touches. Look at the commits — if they touch deploy config, billing, pg-boss, auth middleware, database migrations, etc., generate stage-specific checks (exact log lines, error patterns, user flows). Do not output generic "watch logs" without specifics.
 
-### Step 8b — Follow up with AskUserQuestion
+### Step 9b — Follow up with AskUserQuestion
 
 After printing the checklist, ask:
 
@@ -326,7 +453,7 @@ AskUserQuestion(
 
 ### When no human checks are needed
 
-If ALL checks passed and there are zero human-check items — skip Step 8 entirely and print:
+If ALL checks passed and there are zero human-check items — skip Step 9 entirely and print:
 
 ```
 ALL CHECKS PASSED — feature fully verified, no manual checks needed.

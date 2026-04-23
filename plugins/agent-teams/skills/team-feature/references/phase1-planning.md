@@ -841,7 +841,31 @@ Claim your first task from the task list and start working."
 )
 ```
 
-### 3. Write Initial State File (for compaction resilience)
+### 3. Initialize Legacy Report
+
+Create an empty legacy report so coders have a single place to append findings during implementation:
+
+```
+Write(".claude/teams/{team-name}/LEGACY_REPORT.md"):
+
+# Legacy Report — feature-{name}
+
+Coders append entries here when their task replaces, rewrites, or supersedes existing behavior and leaves old code behind. Lead reads this in Phase 3 and asks the user what to do with each item.
+
+**Entry format (appended by coders):**
+
+## [task #N] {short title}
+- **Where:** `{file}:{line}`
+- **What:** {one sentence}
+- **Why left:** {reason for not deleting}
+- **Still used?** yes / no / unclear — {grep evidence}
+- **Suggested action:** delete / keep / investigate
+
+---
+(no entries yet)
+```
+
+### 4. Write Initial State File (for compaction resilience)
 
 ```
 Write(".claude/teams/{team-name}/state.md"):
@@ -886,8 +910,16 @@ When you change Phase to VERIFICATION, execute these steps IN ORDER:
 - Compile progressive verification report
 - Save to .claude/teams/{team-name}/VERIFICATION_REPORT.md
 
-### Step 5: Shutdown & report
-- Print summary report with verification results
+### Step 5: Legacy Cleanup (team is still alive!)
+- Read .claude/teams/{team-name}/LEGACY_REPORT.md
+- Spawn a quick scan (Explore subagent) on files touched in this session to catch unreferenced exports coders missed; append findings to LEGACY_REPORT.md
+- If any legacy items exist → print full list to chat, then AskUserQuestion with Delete / Keep / Later per item (batch up to 5 per call)
+- For "Delete" items → create cleanup tasks (TaskCreate), coders fix, reviewers approve, commit
+- For "Later" items → append to `.legacy-todo.md` at repo root with context
+- See references/phase3-verification.md Step 6 for full details
+
+### Step 6: Summary & Shutdown
+- Print summary report with verification + legacy cleanup results
 - SendMessage(type="shutdown_request") to all permanent teammates
 - TeamDelete
 - Present Human Checks to user via AskUserQuestion (items that couldn't be auto-verified)

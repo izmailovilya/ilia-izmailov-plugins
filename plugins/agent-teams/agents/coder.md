@@ -143,6 +143,38 @@ Run automated checks (commands from task description):
 - Run tests for affected files if tests exist
 - Fix any issues found
 
+### Step 5.5: Legacy check (MANDATORY if your task replaced/changed existing behavior)
+
+**If your task is pure new code (new file, new endpoint, no modification of existing behavior):** skip this step.
+
+**If your task replaced, rewrote, or superseded existing functionality:** scan for legacy you might have left behind. DO NOT delete it on your own. DO NOT silently leave it. **Report it.**
+
+What counts as legacy after your change:
+- Old function/module/endpoint that your new code replaced, but the old one is still in the file
+- Unused imports, variables, or files that became dead after your changes
+- Old migrations/scripts left "just in case"
+- Comments like `// TODO remove after migration`, `// deprecated, will delete later`
+- Duplicate implementations of the same thing (old + new side by side)
+- Feature flags or `if`-branches that protect the old behavior after full migration
+- Hardcoded fallbacks to the old logic
+
+For each legacy item you detect, append an entry to `.claude/teams/{team-name}/LEGACY_REPORT.md`:
+
+```
+Edit / Write (.claude/teams/{team-name}/LEGACY_REPORT.md):
+
+## [task #N] {short title of what was replaced}
+- **Where:** `{file}:{line}` (or `{file}` if whole file)
+- **What:** {one sentence — what this legacy is}
+- **Why left:** {why you didn't delete it — "might still be used by X", "out of scope of my task", "not sure if safe to remove"}
+- **Still used?** yes / no / unclear — {grep evidence or "didn't check"}
+- **Suggested action:** delete / keep / investigate
+```
+
+If you're unsure whether something is actually unused, say so in **Still used?** — don't guess. Lead will ask the user at the end.
+
+**Do not delete legacy even if it looks obviously dead.** The user decides. You report.
+
 ### Step 6: Request review
 
 When ALL self-checks pass, notify Lead and send review requests:
@@ -234,6 +266,7 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 |---------|------|---------|
 | `IN_REVIEW: task {id}. Files: [list]` | Before sending to reviewers | Lead |
 | `REVIEW: task {id}. Files: [list]` | After self-checks pass | **Every reviewer + gate in YOUR TEAM ROSTER** |
+| `LEGACY_FOUND: task {id}. {N} item(s) logged to LEGACY_REPORT.md` | When you appended to LEGACY_REPORT.md in Step 5.5 | Lead |
 | `DONE: task {id}` or `DONE: task {id}, claiming task {next}` | After commit | Lead |
 | `DONE: task {id}. ALL MY TASKS COMPLETE` | No unassigned tasks left | Lead |
 | `QUESTION: task {id}. [what you need to know]` | Need info not in task/gold standards | Lead |
@@ -246,6 +279,7 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 <output_rules>
 - Never edit files that belong to another coder's task
 - Match gold standard patterns — naming, structure, imports, error handling
+- **Never delete legacy silently, never leave it silently.** If your task replaced existing behavior, report leftovers to `LEGACY_REPORT.md` in Step 5.5 — user decides what to do with it, not you.
 - Self-check conventions BEFORE requesting review — prevention > detection
 - Send review requests DIRECTLY to reviewers and tech-lead via SendMessage — do NOT ask Lead to relay
 - When reviewers send feedback, fix CRITICAL and MAJOR. MINOR is optional.
