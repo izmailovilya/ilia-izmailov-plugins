@@ -55,7 +55,7 @@ Everything else — researchers, not the user.
 
 - **String**: Feature description — decompose into tasks
 - **File path** (`.md`): Read the plan file and create tasks from it
-- **`--coders=N`**: Max parallel coders (default: 3)
+- **`--coders=N`**: Max parallel coders (default: 5)
 - **`--no-research`**: Skip all research. Use when context is already in the prompt or brief.
 
 ## Conventions System

@@ -772,7 +772,7 @@ No separate security/logic/quality reviewers for COMPLEX — architects cover al
 
 ### 2. Coders (up to --coders in parallel, uses `agents/coder.md`)
 
-**Enforcement:** Count available tasks. Spawn min(available_tasks, --coders) coders. Do NOT exceed --coders (default 3) at initial spawn.
+**Enforcement:** Count available tasks. Spawn min(available_tasks, --coders) coders. Do NOT exceed --coders (default 5) at initial spawn.
 
 Tell each coder their team roster so they can communicate directly:
 
