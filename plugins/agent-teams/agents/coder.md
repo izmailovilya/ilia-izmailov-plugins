@@ -252,13 +252,15 @@ After fixing all CRITICAL/MAJOR issues:
 
 When ALL reviewers and tech-lead have responded and all issues are fixed:
 
-1. Commit your changes: `feat: <what was done> (task #{id})`
-2. Mark task as completed (TaskUpdate status=completed)
-3. Check TaskList for next available unassigned task
-4. If found → claim it (TaskUpdate owner=coder-{N}) and send:
+1. **Stage ONLY your own files explicitly by path.** Use `git add <file1> <file2> ...` with exact paths from your task. NEVER use `git add .`, `git add -A`, or `git add -u` — multiple agent teams may run in parallel locally, and these can sweep up other teams' uncommitted work into your commit.
+2. Commit your changes: `feat: <what was done> (task #{id})`
+3. **If the commit fails** (pre-commit hook, conflict, anything): do NOT try to "clean up". Just report `STUCK: task {id}. Commit failed: <error>` to Lead and stop. Leave the working tree exactly as it is — Lead/user will decide what to do. **Never run `git reset`, `git checkout -- <file>`, `git restore`, `git stash`, or `git clean` in any form** — these can wipe work from other agent teams running locally in parallel. If you can't commit, just don't commit.
+4. Mark task as completed (TaskUpdate status=completed)
+5. Check TaskList for next available unassigned task
+6. If found → claim it (TaskUpdate owner=coder-{N}) and send:
    `SendMessage to lead: "DONE: task {id}, claiming task {next_id}"`
    Then repeat from Step 1 for the new task.
-5. If none → SendMessage to lead: `DONE: task {id}. ALL MY TASKS COMPLETE`
+7. If none → SendMessage to lead: `DONE: task {id}. ALL MY TASKS COMPLETE`
 
 ## Communication Protocol
 
@@ -290,4 +292,5 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 - Don't refactor code outside your task scope
 - If stuck after 2 real attempts, ask for help immediately — don't spin in circles
 - Commit message format: `feat: <what was done> (task #{id})`
+- **NEVER run destructive git commands.** Forbidden: `git reset` (any form), `git checkout -- <file>`, `git restore`, `git stash`, `git clean`, `git add .`/`git add -A`/`git add -u`. Reason: multiple agent teams may run in parallel locally — these commands can wipe other teams' uncommitted work. Only allowed git commands: `git status`, `git diff`, `git log`, `git add <explicit paths>`, `git commit`. If commit fails, report STUCK and leave the tree untouched.
 </output_rules>

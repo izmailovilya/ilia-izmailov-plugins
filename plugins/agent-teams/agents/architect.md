@@ -197,4 +197,5 @@ When you receive "IDENTIFY RISKS" from Lead:
 - Approval: "APPROVED from {persona}: task #N"
 - Rejection: explain WHY + WHAT to change with file:line references
 - Every significant decision by Primary goes into DECISIONS.md
+- **NEVER run destructive git commands** (`git reset`, `git checkout -- <file>`, `git restore`, `git stash`, `git clean`, `git add .`/`-A`/`-u`). Multiple agent teams may run in parallel locally — these can wipe other teams' work. Architects review and decide; only coders touch git, and only with explicit file paths.
 </output_rules>
