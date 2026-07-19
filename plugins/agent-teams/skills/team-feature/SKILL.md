@@ -45,7 +45,18 @@ The only reasons to contact the user:
 
 Everything else — researchers, not the user.
 
-**Do not confuse autonomy with silence.** Autonomy means Lead decides without asking permission. It does NOT mean Lead works in a black box and never surfaces progress. After every major phase gate (plan validated, risks analyzed, implementation done, verification done), the user gets a concise update in chat. If the user doesn't hear from Lead between "starting" and "done", Lead is doing it wrong.
+**Do not confuse autonomy with silence.** Autonomy means Lead decides without asking permission. It does NOT mean Lead works in a black box and never surfaces progress. The user watches the run live — see the Progress Feed section below. If the user doesn't hear from Lead between "starting" and "done", Lead is doing it wrong.
+
+## Progress Feed — Keep the User in the Loop
+
+The user watches the run in chat and must be able to catch problems in the moment — a wrong decision, a missed risk, a stuck task. Lead prints progress at defined points; each phase reference file marks its exact print points with 📢. Principles:
+
+- **Format follows the phase.** Phase 1 (rare, large events) = short digest blocks after each step: research done, complexity verdict, debate rounds, risk verdicts. Phase 2 (many small events) = live one-liner ticker: task done, decision made, stuck. Phase 3 = progress lines per verification round + the existing final reports.
+- **Product language, user's language.** Write feed lines in the language the user speaks, in product terms ("review caught: one user could see another user's settings — fixed"), not implementation jargon ("fixed IDOR in tRPC procedure").
+- **Signal over noise.** Feed only what changes behavior, security, scope, or plan: decisions, confirmed risks, edge cases, task completions, escalations, stuck tasks. Never feed routine review nitpicks (naming, style) or internal mechanics (state.md updates, spawn details).
+- **Cheap by design.** Almost everything printed is data Lead already receives (researcher reports, risk findings, DONE messages). The only extra inbound messages are: architect debate round summaries, coder DONE digests, and DECISION notices from Tech Lead / Primary Architect.
+- **Emoji prefixes** keep the feed scannable — use them consistently: 🚀 kickoff, 🔍 research, ⚖️ complexity, ⚔️ debate, ⚠️ risk identified, 🧪 risk/verification result, 📋 decision, ✅ task done, 🔎 task in review, ⏸️ stuck, 🧹 legacy found, 👥 team, 🔨 fix iteration, 📝 plan change.
+- **The feed never replaces hard gates.** Plan Brief, design forks, legacy cleanup, and Human Checks remain mandatory interaction points — the feed fills the silence between them.
 
 **Context is precious.** Lead is the brain of the team. Don't waste context on raw file contents and search results. Dispatch researchers and receive condensed summaries.
 
@@ -76,7 +87,7 @@ The `.conventions/` directory is the **single source of truth** for project patt
 
 | Role | Lifetime | Communicates with | Responsibility |
 |------|----------|-------------------|----------------|
-| **Lead** | Whole session | Everyone (sparingly) | Dispatch researchers, plan, spawn team, monitor DONE/STUCK in Phase 2 |
+| **Lead** | Whole session | Everyone (sparingly) | Dispatch researchers, plan, spawn team, monitor DONE/STUCK in Phase 2, narrate the progress feed to the user |
 | **Researcher** | One-shot | Lead only | Explore codebase or web, return findings with FULL file content |
 | **Tech Lead** | Whole session | Lead (planning) + Coders (directly) | Validate plan, architectural review, DECISIONS.md |
 | **Coder** | Per task | Reviewers + Tech Lead (directly), Lead (DONE/STUCK) | Implement, self-check, request review directly, fix feedback, commit |
@@ -129,8 +140,9 @@ Execute these steps in order:
 
 > **Full details:** `references/phase2-monitoring.md`
 
-**Lead's role is MINIMAL.** Coders communicate directly with reviewers and tech-lead via SendMessage. Lead only:
+**Lead's role is MINIMAL in coordination — but not silent.** Coders communicate directly with reviewers and tech-lead via SendMessage. Lead only:
 
+- Prints a progress feed line for every meaningful event (see Progress Feed table in `phase2-monitoring.md`)
 - Tracks progress in state.md (task status updates)
 - Spawns new coders when tasks complete and unassigned work remains
 - Handles STUCK/QUESTION/REVIEW_LOOP escalations
@@ -177,5 +189,5 @@ Execute in order:
 Detailed protocols for each phase:
 
 - **`references/phase1-planning.md`** — Research dispatch, complexity classification algorithm, VERIFICATION_PLAN template, gold standard block, task creation template, plan validation (Tech Lead + Architect debate), risk analysis, team spawn templates, state file template.
-- **`references/phase2-monitoring.md`** — Event handling table, state file updates, compaction recovery, spawning new coders, stuck protocol.
+- **`references/phase2-monitoring.md`** — Event handling table with progress feed column, task-done digest format, noise filter, state file updates, compaction recovery, spawning new coders, stuck protocol.
 - **`references/phase3-verification.md`** — Conventions update, completion gate, integrated verification pipeline (5a-5f), verification report template, legacy cleanup (6a-6e: read LEGACY_REPORT, safety scan, per-item AskUserQuestion, cleanup tasks), summary report, shutdown, human checks.

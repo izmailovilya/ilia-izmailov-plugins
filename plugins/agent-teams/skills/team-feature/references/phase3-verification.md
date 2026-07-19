@@ -1,8 +1,12 @@
 # Phase 3: Completion & Verification — Detailed Protocol
 
+> Print points are marked 📢 — short feed lines in the user's language, product terms. The final reports (verification report, summary, human checks) already exist; the feed makes the *process* between them visible.
+
 When all coding tasks are completed:
 
 ## 1. Conventions Update
+
+📢 One line entering Phase 3: `🏁 Code is written. Wrapping up: updating project conventions, then running all checks.`
 
 The conventions task (created in Phase 1 Step 3) should now be unblocked. Assign it to a coder.
 
@@ -84,6 +88,8 @@ Bash: curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 {base_url}
 
 ### 5c. Spawn Verifier Agents in Parallel
 
+📢 Before spawning: `🧪 Verification: {N} automated checks (build, tests, browser, spec).`
+
 Only spawn agents for sections with items. Launch ALL in parallel:
 
 ```
@@ -136,11 +142,20 @@ If INCONSISTENT → log warning, mark missing items as DEGRADED.
 
 ### 5e. Fix-Verify Loop (team is still alive!)
 
+📢 When results are collected (5d), print the outcome in product terms — failures named as user-visible problems, not check IDs:
+
+```
+🧪 Results: 12 of 14 ✅. Two problems: the save button does nothing on an empty form; the migration test fails.
+```
+
+(If everything passed: `🧪 All {N} checks passed ✅.`)
+
 If there are **FAIL** items:
 1. Create targeted fix tasks for coders based on failure evidence
 2. Wait for coders to fix and commit
 3. Re-run ONLY the failed checks (spawn fresh verifiers for failed items only)
 4. **Hard cap: 3 iterations max.** Tag each iteration: "Verification run {N}/3: fixing {list}"
+   📢 Per iteration: `🔨 Fix iteration {N}/3: {what's being fixed, product terms}` and, after re-verify: `🧪 Re-check: {result}`
 5. After 3 attempts → mark remaining FAILs as unresolved, add to Human Checks with full retry trace
 
 If there are **BROKEN** items: do NOT retry — these are environment issues. Add to Human Checks with action "fix environment".

@@ -257,10 +257,19 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 3. **If the commit fails** (pre-commit hook, conflict, anything): do NOT try to "clean up". Just report `STUCK: task {id}. Commit failed: <error>` to Lead and stop. Leave the working tree exactly as it is — Lead/user will decide what to do. **Never run `git reset`, `git checkout -- <file>`, `git restore`, `git stash`, or `git clean` in any form** — these can wipe work from other agent teams running locally in parallel. If you can't commit, just don't commit.
 4. Mark task as completed (TaskUpdate status=completed)
 5. Check TaskList for next available unassigned task
-6. If found → claim it (TaskUpdate owner=coder-{N}) and send:
-   `SendMessage to lead: "DONE: task {id}, claiming task {next_id}"`
-   Then repeat from Step 1 for the new task.
-7. If none → SendMessage to lead: `DONE: task {id}. ALL MY TASKS COMPLETE`
+6. If found → claim it (TaskUpdate owner=coder-{N}) and send the DONE digest (format below) with `, claiming task {next_id}` appended to the first line. Then repeat from Step 1 for the new task.
+7. If none → send the DONE digest with `. ALL MY TASKS COMPLETE` appended to the first line.
+
+**DONE digest format** — Lead relays this to the user, so write SUMMARY/REVIEW/EDGE CASES in plain product language (what a non-programmer understands), not code terms:
+
+```
+DONE: task {id}
+SUMMARY: {1 line — what now works, from the user's point of view}
+REVIEW: {N} round(s); notable findings: {only findings that changed behavior or security — e.g. "one user could see another user's settings — fixed". If only style/naming nitpicks: "none"}
+EDGE CASES: {boundary cases your code explicitly handles — e.g. "empty settings for new users → defaults". If none: "none"}
+```
+
+Keep it to 4 lines. Do not list routine review nitpicks (naming, style) as notable findings — that's noise.
 
 ## Communication Protocol
 
@@ -269,8 +278,8 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 | `IN_REVIEW: task {id}. Files: [list]` | Before sending to reviewers | Lead |
 | `REVIEW: task {id}. Files: [list]` | After self-checks pass | **Every reviewer + gate in YOUR TEAM ROSTER** |
 | `LEGACY_FOUND: task {id}. {N} item(s) logged to LEGACY_REPORT.md` | When you appended to LEGACY_REPORT.md in Step 5.5 | Lead |
-| `DONE: task {id}` or `DONE: task {id}, claiming task {next}` | After commit | Lead |
-| `DONE: task {id}. ALL MY TASKS COMPLETE` | No unassigned tasks left | Lead |
+| `DONE: task {id}` digest (+ `, claiming task {next}`) — 4-line format with SUMMARY / REVIEW / EDGE CASES (see Step 9) | After commit | Lead |
+| `DONE: task {id}` digest + `. ALL MY TASKS COMPLETE` | No unassigned tasks left | Lead |
 | `QUESTION: task {id}. [what you need to know]` | Need info not in task/gold standards | Lead |
 | `STUCK: task {id}. Problem: [...]` | After 2 failed attempts | Lead |
 | `REVIEW_LOOP: task {id}. Reviewer {name}...` | 3+ review rounds same issue | Tech Lead / Primary Architect (from roster). SIMPLE: Lead |

@@ -1,21 +1,44 @@
 # Phase 2: Execution — Monitor Mode (Detailed Protocol)
 
-## Lead's Role is MINIMAL
+## Lead's Role: Coordinate Minimally, Narrate Continuously
 
-Coders communicate directly with reviewers/architects and tech-lead/primary-architect via SendMessage. Lead only handles progress tracking and exceptional events.
+Coders communicate directly with reviewers/architects and tech-lead/primary-architect via SendMessage. Lead handles progress tracking and exceptional events — and **prints a live feed line for every meaningful event** (📢 column below). This is the user's only window into the work; without it Phase 2 is a black box.
+
+Feed rules: user's language, product terms, one entry per event, always include the progress counter `{done}/{total}` on task events. See "Progress Feed" in SKILL.md.
 
 ## Event Handling
 
-| Event from team member | Action |
-|------------------------|--------|
-| Coder: `IN_REVIEW: task #N` | Update state.md (mark IN_REVIEW). No other action needed. |
-| Coder: `DONE: task #N` | Update state.md (mark completed). If unassigned tasks remain AND active coders < max, spawn new coder with team roster. |
-| Coder: `DONE: task #N, claiming task #M` | Update state.md (mark #N completed, #M in progress by same coder). No spawn needed — coder already claimed next task. |
-| Coder: `DONE: task #N. ALL MY TASKS COMPLETE` | Update state.md. Check if ALL coding tasks done → **change Phase in state.md to VERIFICATION and follow Phase 3 Instructions in state.md step by step.** If unassigned remain, spawn new coder. |
-| Coder: `QUESTION: task #N. [question]` | Answer from Phase 1 context if possible. If not — dispatch a researcher (Explore or general-purpose with WebSearch), then SendMessage the answer to coder. |
-| Coder: `STUCK: task #N` | Dispatch a researcher to investigate. Adjust task description or reassign to different coder. |
-| Coder: `REVIEW_LOOP: task #N` | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from context or dispatch researcher. |
-| Unified reviewer: `ESCALATE TO MEDIUM` | Spawn 3 specialized reviewers (security, logic, quality) + tech-lead. SendMessage to coder: "ROSTER UPDATE: your reviewers are now security-reviewer, logic-reviewer, quality-reviewer. Your architectural gate is now tech-lead. Cancel pending unified-reviewer wait and re-send REVIEW to new roster." Shut down unified-reviewer. |
+| Event from team member | Action | 📢 Print to chat |
+|------------------------|--------|------------------|
+| Coder: `IN_REVIEW: task #N` | Update state.md (mark IN_REVIEW). | `🔎 Task #N in review: {short title}` |
+| Coder: `DONE: task #N` (any variant) | Update state.md (mark completed). If unassigned tasks remain AND active coders < max, spawn new coder with team roster. If coder claimed next task — no spawn needed. | Task-done digest — see "Task-Done Digest" below. |
+| Coder: `DONE: task #N. ALL MY TASKS COMPLETE` | Update state.md. Check if ALL coding tasks done → **change Phase in state.md to VERIFICATION and follow Phase 3 Instructions in state.md step by step.** If unassigned remain, spawn new coder. | Task-done digest. If transitioning: `🏁 All {N} tasks done — moving to verification.` |
+| Coder: `QUESTION: task #N. [question]` | Answer from Phase 1 context if possible. If not — dispatch a researcher (Explore or general-purpose with WebSearch), then SendMessage the answer to coder. | Only if a researcher was dispatched: `🔍 Task #N raised a question ({what, in product terms}) — researching.` Answered-from-context questions are noise, don't print. |
+| Coder: `STUCK: task #N` | Dispatch a researcher to investigate. Adjust task description or reassign to different coder. | `⏸️ Task #N stuck: {problem in product terms} — {what Lead is doing about it}` |
+| Coder: `LEGACY_FOUND: task #N` | Note it (entries are in LEGACY_REPORT.md; handled in Phase 3). | `🧹 Task #N left old code behind ({N} item(s)) — I'll ask you what to do with it at the end.` |
+| Coder: `REVIEW_LOOP: task #N` | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from context or dispatch researcher. | `⏸️ Task #N: review going in circles ({topic}) — escalated to {tech lead / primary architect} for a ruling.` |
+| Tech Lead / Primary Architect: `DECISION: [one-liner]` | No action — decision is already logged in DECISIONS.md by its author. | `📋 Decision: {the one-liner, in product terms — what was decided and why}` |
+| Unified reviewer: `ESCALATE TO MEDIUM` | Spawn 3 specialized reviewers (security, logic, quality) + tech-lead. SendMessage to coder: "ROSTER UPDATE: your reviewers are now security-reviewer, logic-reviewer, quality-reviewer. Your architectural gate is now tech-lead. Cancel pending unified-reviewer wait and re-send REVIEW to new roster." Shut down unified-reviewer. | `⚖️ Task turned out riskier than expected ({reason}) — strengthening the team: 3 specialized reviewers + tech lead.` |
+
+## Task-Done Digest
+
+Coders' DONE messages carry a SUMMARY / REVIEW / EDGE CASES block (see coder.md Step 9). Print it as a compact digest:
+
+```
+✅ {done}/{total} done: {what now works, product language} ({N} review round(s))
+   Review caught: {notable findings — only behavior/security-level, in product terms}
+   Edge cases: {handled edge cases}
+```
+
+- Omit the "Review caught" line if there were no notable findings, and "Edge cases" if none — a clean task is a single ✅ line.
+- If a coder's DONE arrives without the digest block (older format), print the single ✅ line from the task title — don't chase the coder for details.
+
+## Noise Filter — What NOT to Print
+
+- Routine review nitpicks (naming, style, formatting) — even if the coder lists them
+- Internal mechanics: state.md updates, coder spawns/shutdowns, roster bookkeeping
+- QUESTION events answered from existing context
+- Anything already printed — don't repeat a decision that was already fed
 
 ## What Lead Does NOT Do
 

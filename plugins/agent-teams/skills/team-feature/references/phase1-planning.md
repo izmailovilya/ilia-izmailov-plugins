@@ -1,5 +1,18 @@
 # Phase 1: Discovery, Planning & Setup — Detailed Protocol
 
+> Print points are marked 📢 — at each one, Lead prints a short feed update to chat (user's language, product terms). See "Progress Feed" in SKILL.md for principles.
+
+## Step 0: 📢 Kickoff Roadmap
+
+Before anything else, print a one-block roadmap so the user knows what to expect and where the run currently is:
+
+```
+🚀 Launching the team. Route: research → complexity assessment → plan → risk analysis → implementation → verification.
+I'll report at every step — interrupt me anytime if something looks wrong.
+```
+
+(Complexity isn't known yet — this is the generic route. SIMPLE runs will just skip steps; no need to re-print the map.)
+
 ## Step 1: Quick Orientation (Lead alone — minimal context use)
 
 Only read what's tiny and critical:
@@ -96,6 +109,22 @@ Task(
 
 Researchers may be dispatched mid-session — but ONLY when genuinely lacking information not already in context (brief, .conventions/, Phase 1 findings). Do NOT dispatch a researcher for every STUCK or QUESTION signal — first check if you can answer from what you already know.
 
+### 📢 Research feed
+
+**When dispatching** (skip if no researchers spawned), one line:
+
+```
+🔍 Research: 2 researchers exploring the project (stack & structure + reference patterns)
+```
+
+**When researchers return**, a 3-4 line digest of what was learned — the user should recognize their own project in it:
+
+```
+🔍 Research done: {stack in plain terms}, the feature touches {N} layers ({which, in product terms}).
+Reference examples found for {layers}; {missing layer, if any} has no established pattern — we'll be setting a new one.
+{One line for anything surprising: unusual structure, missing tests, tangled module — only if genuinely notable.}
+```
+
 ## Step 3: Classify Complexity and Synthesize Plan
 
 Once researchers return, classify the feature complexity. Follow this algorithm **step by step in order**:
@@ -150,6 +179,17 @@ STEP B — COMPLEX triggers: N/7 fired (skip if Step A = SIMPLE or COMPLEX)
 
 FINAL: [SIMPLE / MEDIUM / COMPLEX] (mandatory, not overridable)
 ```
+
+### 📢 Complexity verdict
+
+After the classification block, print the verdict in human terms — why, and what it means for the team:
+
+```
+⚖️ Complexity: COMPLEX — touches all 3 layers, has a chain of dependent tasks.
+This means: 3 architects debate the plan first, up to 5 coders, risks get verified before any code.
+```
+
+(For SIMPLE: "⚖️ Complexity: SIMPLE — one coder + one reviewer, no risk analysis. Fast lane.")
 
 Now plan:
 
@@ -306,6 +346,8 @@ Then set it as blocked by all other coding tasks via TaskUpdate. The conventions
 
 **For MEDIUM:** Spawn Tech Lead and validate.
 
+📢 Before spawning, one line: `📝 Plan drafted: {N} tasks. Tech Lead is validating it now.` (The validation outcome is reported via the Step 4c-4 MEDIUM brief.)
+
 Spawn Tech Lead (permanent teammate, uses `agents/tech-lead.md`):
 ```
 Task(
@@ -387,6 +429,9 @@ INSTRUCTIONS:
 2. Read CLAUDE.md and .conventions/ for project context
 3. Post your CRITIQUE to the other two architects via SendMessage — ground it in the codebase context and reference code above
 4. Respond to their critiques — debate directly with each other
+4b. After EACH round of critique you post, also send me (Lead) a compact round summary — 2-3 lines max:
+   ROUND {N} SUMMARY from {persona}: [your current position + the main point of disagreement, if any]
+   This is for user visibility — do NOT wait for my reply, keep debating.
 5. Add VERIFICATION CHECKS from your domain — what should be verified after implementation:
    - Frontend: browser checks (pages load, elements visible, interactions work)
    - Backend: spec checks (files exist, exports correct, API returns expected status)
@@ -396,6 +441,23 @@ INSTRUCTIONS:
 ```
 
 ### Step 4c-3: Monitor debate and handle convergence:
+
+📢 **Print debate rounds as they happen.** When ROUND SUMMARY messages arrive from the architects, print a per-round digest — what's being argued and each side's position, one line per persona, in product terms:
+
+```
+⚔️ Round 1: debating how to store settings.
+• Backend: separate table — cleaner migrations
+• Frontend: JSON field — fewer requests
+• Systems: separate table is easier to test
+```
+
+When positions converge (or Lead breaks a deadlock), close the thread:
+
+```
+⚔️ Round 2: agreed on a separate table. Debate settled in 2 rounds.
+```
+
+Don't wait for all 3 summaries of a round to print — post what you have when 2+ arrive or when the debate moves on. Skip printing a round if nothing new was argued.
 
 Wait for all 3 architects to send "SPEC APPROVED" to Lead. If they converge:
 - Collect all recommendations
@@ -637,6 +699,15 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    Return at least 3 risks, prioritized by severity."
    ```
 
+1b. 📢 **Print the risk list** when it arrives — severity in human terms, before spawning testers:
+
+   ```
+   ⚠️ {Tech Lead / Primary Architect} identified {N} risks. Verifying the serious ones before writing any code:
+   1. {risk in product language} — critical
+   2. {risk} — critical
+   3. {risk} — moderate (not verified separately, watched during review)
+   ```
+
 2. **Spawn risk testers** (one-shot, parallel — one per CRITICAL/MAJOR risk):
 
    Risk testers use the dedicated `agent-teams:risk-tester` agent type (defined in `agents/risk-tester.md`).
@@ -658,6 +729,13 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
 
    **Reference for risk testers:** If needed, Lead reads `references/risk-testing-example.md` for the detailed case study pattern. Only load this reference when spawning risk testers — not at initialization.
 
+2b. 📢 **Print each verdict** as risk tester results come back — what was found and what it changes:
+
+   ```
+   🧪 Risk 1 CONFIRMED: real API limit is 2 req/s, not the documented 5. Lowering parallelism.
+   🧪 Risk 2 not confirmed: all existing users have the field populated — migration is safe.
+   ```
+
 3. **Forward findings to Tech Lead / Primary Architect** for review and plan updates:
    ```
    SendMessage to {tech-lead (MEDIUM) / primary architect (COMPLEX)}:
@@ -677,6 +755,7 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    - If new tasks suggested → create them (TaskCreate)
    - If reordering suggested → adjust dependencies (TaskUpdate)
    - If a risk requires user decision (e.g., "accept data loss during migration or add backward compatibility?") → notify user
+   - 📢 Close the risk step with one line on what changed: `📝 Plan adjusted: +1 task (request queue), confirmed risks added to the verification checklist.` (If nothing changed: `📝 Plan unchanged — no confirmed risks required it.`)
    - **Update VERIFICATION_PLAN.md** — add confirmed risk mitigations to the "Risk Mitigation Checks" section:
      ```
      ## Risk Mitigation Checks
@@ -885,6 +964,7 @@ If you lost context after compaction, read this file.
 Your role: listen for DONE/STUCK/ESCALATE from team members.
 - DO NOT read code, run checks, or notify reviewers — coders do that directly
 - Update this file after each event
+- Print a progress feed line to chat for each event — task digests, decisions, stuck reports (see phase2-monitoring.md event table). The user is watching the run live.
 - When ALL coding tasks show COMPLETED → change Phase to VERIFICATION and follow Phase 3 instructions below
 
 ## Phase 3 Instructions (VERIFICATION) — follow step by step when Phase changes
@@ -940,6 +1020,14 @@ When you change Phase to VERIFICATION, execute these steps IN ORDER:
 - #{id}: {subject} — {STATUS} ({assignment})
 
 ## Active Coders: {N} (max: {M})
+```
+
+### 5. 📢 Team Assembled
+
+After spawning everyone and writing state.md, print one line — composition in human terms, and set the expectation for the ticker:
+
+```
+👥 Team assembled: 3 architects (now acting as reviewers), 4 coders. Writing code — you'll see a line here for every completed task, decision, and problem.
 ```
 
 Coders drive their own review process via SendMessage to reviewers and tech-lead. Lead is NOT in the review loop.

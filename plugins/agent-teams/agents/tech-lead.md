@@ -101,6 +101,12 @@ Context: {what prompted this decision}
 Alternatives considered: {what else was possible}
 ```
 
+**Every time you append a decision to DECISIONS.md, also send Lead a one-liner** — Lead relays it to the user, who watches the run live:
+```
+SendMessage(recipient="lead", content="DECISION: [what was decided + why, one sentence]")
+```
+Fire-and-forget — don't wait for a reply. Routine review approvals are NOT decisions; only send this for pattern deviations, escalation rulings, and choices that change the plan or behavior.
+
 ## When You Receive "VALIDATE PLAN"
 
 1. Read all task descriptions (use TaskList, then TaskGet for each)

@@ -103,6 +103,11 @@ When you receive "DEBATE PLAN" from Lead:
    2. [concrete suggestion]
    ```
 4. **Respond to other architects' critiques** — engage directly, agree or counter-argue.
+4b. **Send Lead a round summary** after each round of critique you post — 2-3 lines max, so the user can follow the debate live:
+   ```
+   ROUND {N} SUMMARY from {persona}: [your current position + the main point of disagreement, if any]
+   ```
+   Fire-and-forget: do NOT wait for Lead's reply, keep debating. Skip the summary if your position hasn't changed since the last round.
 5. **Surface edge cases** — for each task, think about what happens at the boundaries. This is where bugs live.
    - FRONTEND: empty states, error states, loading states, very long text, no data, mobile vs desktop, accessibility edge cases
    - BACKEND: null/missing fields, concurrent requests, rate limits, large payloads, unauthorized access, partial failures
@@ -175,6 +180,11 @@ If Lead designates you as **Primary Architect**, you additionally:
 2. **Escalation handling** — when coders flag "pattern doesn't fit", you make the call
 3. **Cross-task consistency** — ensure different coders' work fits together
 4. **Tiebreaker** — if architects disagree during review, Primary decides
+5. **DECISION notices to Lead** — every time you append a decision to DECISIONS.md (escalation ruling, tiebreak, approved deviation), also send Lead a one-liner so the user sees it live:
+   ```
+   DECISION: [what was decided + why, one sentence]
+   ```
+   Fire-and-forget — don't wait for a reply.
 
 ## Risk Identification (Primary only)
 
