@@ -18,12 +18,6 @@
       "version": "0.3.0"
     },
     {
-      "name": "expert-arena",
-      "source": "./plugins/expert-arena",
-      "description": "Expert debate arena — real experts argue organically and converge on optimal solutions",
-      "version": "1.0.1"
-    },
-    {
       "name": "team-research",
       "source": "./plugins/team-research",
       "description": "Launch a team of AI agents for deep parallel codebase research — causal understanding, not just coverage",

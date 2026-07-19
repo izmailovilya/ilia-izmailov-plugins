@@ -43,28 +43,6 @@ The main workflow is `/interviewed-team-feature` — a short adaptive interview 
 
 ---
 
-### expert-arena
-
-Expert evaluation arena — real experts independently assess options with cross-enrichment for any domain.
-
-> **Requires:** Enable `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` in settings.json or environment. [See setup →](./plugins/agent-teams/README.md#prerequisites)
-
-```bash
-/plugin install expert-arena@ilia-izmailov-plugins
-```
-
-**Usage:**
-```
-/expert-arena "Should we use microservices or monolith?"
-/expert-arena "Best pricing strategy for a developer tool?"
-```
-
-Selects 3-5 real experts with opposing viewpoints, gathers context via researchers, launches independent evaluations with cross-enrichment, and produces an action-oriented report: verdict first, action plan second, detailed analysis for those who want to dig deeper.
-
-[Read more →](./plugins/expert-arena/README.md)
-
----
-
 ### team-research
 
 Deep parallel codebase research — causal understanding, not just coverage.
