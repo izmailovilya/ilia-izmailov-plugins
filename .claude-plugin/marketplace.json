@@ -9,13 +9,13 @@
       "name": "vibe-audit",
       "source": "./plugins/vibe-audit",
       "description": "Interactive feature audit for vibe-coded projects - finds dead code through conversation",
-      "version": "0.1.2"
+      "version": "0.1.3"
     },
     {
       "name": "agent-teams",
       "source": "./plugins/agent-teams",
       "description": "Launch a team of AI agents to implement features with code review gates",
-      "version": "0.4.1"
+      "version": "0.4.2"
     },
     {
       "name": "team-research",

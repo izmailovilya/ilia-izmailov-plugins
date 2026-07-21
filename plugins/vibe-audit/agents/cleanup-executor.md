@@ -9,7 +9,7 @@ description: |
   assistant: "Запускаю cleanup-executor для безопасного удаления с git backup"
   </example>
 
-model: fable
+model: opus
 tools:
   - Read
   - Grep
