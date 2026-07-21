@@ -5,29 +5,29 @@
     "url": "https://github.com/izmailovilya"
   },
   "plugins": [
-{
+    {
       "name": "vibe-audit",
       "source": "./plugins/vibe-audit",
       "description": "Interactive feature audit for vibe-coded projects - finds dead code through conversation",
-      "version": "0.1.1"
+      "version": "0.1.2"
     },
     {
       "name": "agent-teams",
       "source": "./plugins/agent-teams",
       "description": "Launch a team of AI agents to implement features with code review gates",
-      "version": "0.3.0"
+      "version": "0.4.1"
     },
     {
       "name": "team-research",
       "source": "./plugins/team-research",
       "description": "Launch a team of AI agents for deep parallel codebase research — causal understanding, not just coverage",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "name": "repo-scout",
       "source": "./plugins/repo-scout",
       "description": "Scout open-source repos for patterns and ideas to improve your own product",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }

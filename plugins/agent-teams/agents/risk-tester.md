@@ -39,7 +39,7 @@ description: |
   </commentary>
   </example>
 
-model: opus
+model: fable
 color: yellow
 tools:
   - Read

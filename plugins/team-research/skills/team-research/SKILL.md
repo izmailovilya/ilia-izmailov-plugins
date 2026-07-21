@@ -15,7 +15,7 @@ allowed-tools:
   - Grep
   - Bash
 argument-hint: "<research question or topic>"
-model: opus
+model: fable
 ---
 
 # Team Research — Deep Investigation

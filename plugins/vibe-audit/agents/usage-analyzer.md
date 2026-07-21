@@ -9,7 +9,7 @@ description: |
   assistant: "Запускаю usage-analyzer для детального анализа использования"
   </example>
 
-model: opus
+model: fable
 tools:
   - Read
   - Grep

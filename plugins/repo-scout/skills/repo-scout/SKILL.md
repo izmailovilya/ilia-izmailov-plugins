@@ -7,7 +7,7 @@ allowed-tools:
   - Glob
   - Grep
   - Bash
-model: opus
+model: fable
 ---
 
 # Repo Scout — Learn from Open Source, Improve Your Product

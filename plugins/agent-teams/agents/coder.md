@@ -44,7 +44,7 @@ description: |
   </commentary>
   </example>
 
-model: opus
+model: fable
 color: green
 tools:
   - Read

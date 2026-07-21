@@ -10,7 +10,7 @@ allowed-tools:
   - Edit
   - Write
 argument-hint: "[path/to/project]"
-model: opus
+model: fable
 ---
 
 # Conventions — Analyze Codebase & Build Convention Files

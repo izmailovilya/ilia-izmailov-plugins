@@ -1,6 +1,6 @@
 {
   "name": "team-research",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Launch a team of AI agents for deep parallel codebase research — causal understanding, not just coverage",
   "author": {
     "name": "Ilia",

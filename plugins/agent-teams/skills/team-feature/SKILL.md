@@ -18,7 +18,7 @@ allowed-tools:
   - AskUserQuestion
   - Edit
 argument-hint: "<description or path/to/plan.md> [--coders=N]"
-model: opus
+model: fable
 ---
 
 # Team Feature — Implementation Pipeline with Review Gates

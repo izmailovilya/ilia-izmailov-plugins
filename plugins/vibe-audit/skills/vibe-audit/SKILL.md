@@ -9,7 +9,7 @@ allowed-tools:
   - Bash
   - AskUserQuestion
 argument-hint: "[scope: features | server | ui | stores | all]"
-model: opus
+model: fable
 ---
 
 # Vibe Audit — Interactive Feature Cleanup

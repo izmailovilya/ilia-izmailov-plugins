@@ -1,7 +1,7 @@
 ---
 name: interviewed-team-feature
 description: "Conducts a short adaptive interview (2-6 questions) to understand intent, then launches /team-feature with a compiled brief. Use this skill when the user asks to 'interview before building', 'discuss feature before implementation', 'ask me questions first', 'let's talk about what to build', 'I have an idea but need to flesh it out', or when the user's feature request is vague or ambiguous and would benefit from clarification before launching a full agent team. Also use when the user explicitly wants to be involved in scoping before implementation begins."
-model: opus
+model: fable
 ---
 
 # Interviewed Team Feature — Adaptive Interview Before Implementation
