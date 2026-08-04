@@ -152,6 +152,43 @@ Execute these steps in order:
 
 **Compaction recovery:** If context is lost, read `.claude/teams/{team-name}/state.md` — it contains the current phase, team roster, task statuses, and executable instructions for what to do next.
 
+<!-- report-format-contract -->
+### Output format: the "now → after" table
+
+The report is read by a product person, not an engineer. Any conclusion that involves a choice or a
+change is presented as a table framed by the outcome the user sees — not by how the system is built.
+
+**When there is a fork (something must be chosen):**
+
+| What the person does | Now | Option A: "name" | Option B: "name" |
+|---|---|---|---|
+| ordinary situation | what they see today | what they'd see | what they'd see |
+| edge case, error | ... | ... | ... |
+
+Below the table, a "Why" block: one line per option (what it wins, what it costs). Then one line:
+"Recommend X, because …".
+
+**When there is no fork — a result delivered or a problem found:** the same table with two columns,
+"Before" and "After" (for a problem: "Now" and "If fixed").
+
+Rules for filling it in:
+
+- Rows are real user situations, never system components. "Scanned a barcode and typed 73 g", not
+  "the barcode_service handler".
+- Cells say what the person will see, concretely and with numbers: "calories for 60 g instead of 73",
+  not "incorrect calculation".
+- The "Now" column is mandatory — without a baseline the options have nothing to compare against. If
+  the thing doesn't exist yet, write "doesn't exist".
+- Include at least one edge-case row: typo, empty input, error. That is usually where the options
+  actually diverge.
+- 2-4 rows, 2-3 options. More means the thinking isn't finished and the choice is being dumped on the
+  reader.
+- Name options by meaning ("trust the person" / "trust the package"), never "Option 1/2".
+
+No fork and no change means no table: one line saying what you're doing and why. Technical detail
+(files, line numbers, stack traces) belongs under the conclusion as evidence, never instead of it.
+Write the table in the language the user is speaking.
+
 ### Phase 3: Completion & Verification
 
 > **Full details:** `references/phase3-verification.md`
