@@ -23,7 +23,7 @@ Canonical role IDs. These are the keys usable in the config `roles` block.
 |---------|------|-----------|----------------|
 | `lead` | orchestrator | skill entry | **claude only** (owns team, tasks, user dialogue) |
 | `codebase-researcher` | one-shot | Phase 1 Step 2 | claude, codex, kimi, grok |
-| `reference-researcher` | one-shot | Phase 1 Step 2 | claude, codex, kimi |
+| `reference-researcher` | one-shot | Phase 1 Step 2 | claude, codex, kimi, grok |
 | `web-researcher` | one-shot | Phase 1 Step 2 | claude, grok (live search) |
 | `risk-tester` | one-shot | Phase 1 Step 4b | claude, codex |
 | `ci-verifier` | one-shot | Phase 3 Step 5c | claude, codex |
