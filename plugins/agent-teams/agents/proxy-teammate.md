@@ -101,11 +101,13 @@ Then run the engine's `cmd` with `{prompt}` = `"$(cat <path>)"`, `{sandbox}` = `
 role except `coder` and `risk-tester` (those get `workspace-write`). Use `timeout: 600000` — these
 calls take 2–10 minutes. Pipe output to `NNN.out.txt` and read it.
 
-Extract the session id with the pattern you were given and save it to `session.txt`.
+Extract the session id with the pattern you were given and save it to `session.txt`. For Grok there
+is nothing to extract — you mint the id yourself and pass it via `--session-id` on this first call.
 
-**If the call fails** — binary not found, auth error, non-zero exit, or empty output — send
-`ENGINE_DOWN: {role}. {one-line reason}` to Lead and stop. Do not retry more than once. Do not do
-the work yourself.
+**If the call fails** — binary not found, auth error, non-zero exit, or no model reply in the output
+— send `ENGINE_DOWN: {role}. {one-line reason}` to Lead and stop. Do not retry more than once. Do
+not do the work yourself. Judge by the exit code and the presence of a reply, **not** by stderr
+noise: Codex prints a `failed to load models cache` ERROR line on successful runs.
 
 ## Step 2: Later Messages — Resume, Never Restart
 

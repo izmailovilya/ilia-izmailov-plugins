@@ -1,6 +1,6 @@
 {
   "name": "agent-teams",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Slash commands that launch Agent Teams for research, debugging, and feature implementation with code review gates",
   "author": {
     "name": "Ilia"

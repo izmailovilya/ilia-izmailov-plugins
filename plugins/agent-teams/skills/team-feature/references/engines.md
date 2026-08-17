@@ -107,6 +107,15 @@ Any role not listed = `claude`.
 
 These ship with the plugin. Users only override them when a CLI changes its flags.
 
+Flags, models and session mechanics below were smoke-tested against codex-cli 0.146.0, kimi-code/k3
+and grok-4.6 (2026-08-17): each engine answered a prompt and correctly recalled it after a resume.
+**Re-verify after CLI upgrades** — model names and resume flags do change.
+
+**Judging success:** use the process exit code and whether a model reply is present. Do NOT treat
+stderr noise as failure — Codex routinely prints
+`ERROR codex_models_manager::cache: failed to load models cache: missing field base_instructions`
+on a completely successful run.
+
 ### codex
 
 ```
@@ -125,26 +134,34 @@ stdin". Only `gpt-5.6-sol` works on a ChatGPT subscription; plain `gpt-5.6` requ
 
 ```
 cmd:     kimi -m {model} -p "{prompt}"
-resume:  kimi -S {session} -p "{prompt}"
+resume:  kimi -r {session} -p "{prompt}"
 model:   kimi-code/k3
-session: extract from output matching `session_<id>`
+session: extract from the trailing line `To resume this session: kimi -r (session_[0-9a-f-]+)`
 ```
 
 `--auto` / `--yolo` are incompatible with `-p`. Kimi has no sandbox flag — do not assign it
-write-capable roles (`coder`, `risk-tester`).
+write-capable roles (`coder`, `risk-tester`). `-S` is accepted as an alias for `-r`, but `-r` is
+what Kimi itself prints, so use `-r`.
 
 ### grok
 
 ```
-cmd:     grok --sandbox {sandbox} --always-approve -m {model} --effort {effort} -p "{prompt}"
-resume:  grok -r {session} -p "{prompt}"
+cmd:     grok --sandbox {sandbox} --always-approve -m {model} --effort {effort} --session-id {session} -p "{prompt}"
+resume:  grok --sandbox {sandbox} --always-approve --effort {effort} -r {session} -p "{prompt}"
 model:   grok-4.6
 effort:  high
 sandbox: read → read-only, write → workspace-write
+session: NOT printed by Grok — you generate it yourself (any uuid-shaped string) and pass it in
 ```
 
 `--always-approve` is MANDATORY — without it Grok silently exits in batch mode waiting for tool
 approval.
+
+**Grok sessions must be given an explicit `--session-id`.** Unlike Codex and Kimi, Grok prints no
+session id in `-p` mode, and a bare `grok -r` resumes *the most recent session in the current
+directory* — so two Grok-backed roles running in the same project would silently share one
+conversation. Always mint an id per role (e.g. `grok-{team-name}-{role}` normalized to a
+uuid-shaped string), pass it on the first call, and reuse it on every resume.
 
 ---
 
