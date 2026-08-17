@@ -68,6 +68,7 @@ The user watches the run in chat and must be able to catch problems in the momen
 - **File path** (`.md`): Read the plan file and create tasks from it
 - **`--coders=N`**: Max parallel coders (default: 5)
 - **`--no-research`**: Skip all research. Use when context is already in the prompt or brief.
+- **`--engines=off`**: Force every role onto Claude for this run, ignoring `~/.claude/agent-teams.json`.
 
 ## Conventions System
 
@@ -82,6 +83,33 @@ The `.conventions/` directory is the **single source of truth** for project patt
 
 - **If `.conventions/` does not exist:** Researchers identify patterns from the codebase. After feature completion, propose creating `.conventions/` with discovered patterns.
 - **If `.conventions/` exists:** Read gold-standards at Step 1. Include them in coder prompts as few-shot examples.
+
+## Engines — Who Backs Each Role
+
+Every role runs on **Claude by default**. A user MAY reassign individual roles to an external CLI
+agent (Codex, Kimi, Grok) in `~/.claude/agent-teams.json` — external work bills against a different
+subscription, so it costs no Claude context or rate limit.
+
+- **No config file → nothing changes.** This is the stock path and must stay zero-cost: Step 0b exits
+  after one Read that finds nothing.
+- **One-shot roles** on an external engine are not spawned as Claude agents at all — the spawner
+  runs the CLI via Bash and reads the report.
+- **Teammate roles** on an external engine are spawned as `agent-teams:proxy-teammate` under the
+  same name. The team shape is unchanged: coders still message `security-reviewer` and get a normal
+  review back; the proxy delegates the thinking and triages the result before relaying it.
+- **`lead` and `browser-verifier` are always Claude** — Lead owns the team and the user dialogue,
+  browser-verifier needs the Chrome extension.
+- **Decisions never leave Claude's oversight.** Engines produce findings, reports and drafts;
+  approving deviations, resolving review loops, design forks and legacy deletion stay with Lead and
+  the Claude-side (or proxy-checked) architectural gate.
+
+> **Full spec — role registry, config schema, engine presets, both mechanics, failure handling:**
+> `references/engines.md`
+
+**Step 0b (Phase 1, right after the kickoff roadmap):** resolve the engine table per `references/engines.md`. Read
+`~/.claude/agent-teams.json`; missing/invalid/`enabled:false`/`--engines=off` → all roles Claude,
+stop there. Otherwise probe the referenced CLIs with one `command -v` call, record the table in
+state.md under `## Engines`, and print one 📢 line naming the non-Claude roles.
 
 ## Roles
 
@@ -119,6 +147,8 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 > **Full details:** `references/phase1-planning.md`
 
 Execute these steps in order:
+
+0b. **Resolve engines** — see the Engines section above and `references/engines.md`. One Read; if no config file exists, this step ends immediately and every role is Claude.
 
 1. **Quick orientation** (Lead alone) — read CLAUDE.md, check `.conventions/`, glob top-level layout. Do NOT read source files.
 
@@ -227,4 +257,5 @@ Detailed protocols for each phase:
 
 - **`references/phase1-planning.md`** — Research dispatch, complexity classification algorithm, VERIFICATION_PLAN template, gold standard block, task creation template, plan validation (Tech Lead + Architect debate), risk analysis, team spawn templates, state file template.
 - **`references/phase2-monitoring.md`** — Event handling table with progress feed column, task-done digest format, noise filter, state file updates, compaction recovery, spawning new coders, stuck protocol.
+- **`references/engines.md`** — Role registry (every spawnable role and which engines it accepts), `~/.claude/agent-teams.json` schema, built-in Codex/Kimi/Grok presets, Step 0b resolution, delegated one-shot mechanic, proxy teammate mechanic, fallback rules.
 - **`references/phase3-verification.md`** — Conventions update, completion gate, integrated verification pipeline (5a-5f), verification report template, legacy cleanup (6a-6e: read LEGACY_REPORT, safety scan, per-item AskUserQuestion, cleanup tasks), summary report, shutdown, human checks.

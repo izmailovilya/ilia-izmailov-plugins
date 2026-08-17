@@ -13,6 +13,25 @@ I'll report at every step — interrupt me anytime if something looks wrong.
 
 (Complexity isn't known yet — this is the generic route. SIMPLE runs will just skip steps; no need to re-print the map.)
 
+## Step 0b: Resolve Engines
+
+`Read ~/.claude/agent-teams.json`.
+
+- **File missing** (the normal case) → every role runs on Claude. **Stop here, print nothing.** No probing, no extra tool calls. The rest of this document then applies verbatim, unchanged.
+- **`--engines=off`, or `"enabled": false`, or invalid JSON** → same: all Claude. On invalid JSON print one warning line.
+- **Otherwise** → follow `references/engines.md` "Step 0b": probe only the CLIs named in `roles` with a single `command -v` call, build the role→engine table, record it in state.md under `## Engines`, and print the 📢 line.
+
+**Applying the table at every spawn point below.** Before every `Task()` in this document, check the engine of the role it spawns. Two spawns do not carry an `agent-teams:` type but are still roles in the registry: the web-research `Task(subagent_type="general-purpose", ...)` in Step 2 is the `web-researcher` role, and the Phase 3 `Task(subagent_type="Explore", ...)` safety scan is the `legacy-scanner` role.
+
+| Engine | One-shot role (researchers, risk-tester, verifiers, legacy scan) | Teammate role (reviewers, tech-lead, architects, coder) |
+|--------|------------------------------------------------------------------|----------------------------------------------------------|
+| `claude` (default) | `Task()` exactly as written | `Task()` exactly as written |
+| external | **No `Task()`.** Write the same prompt to a file and run the CLI via Bash — `engines.md` Mechanic A | `Task(subagent_type="agent-teams:proxy-teammate", name="<same role name>", ...)` with the role's own agent file pasted in as the role brief — `engines.md` Mechanic B |
+
+The prompts printed in this document are the source of truth for both paths — an external engine receives the *same* prompt text, plus the Output Contract from `engines.md`. Never write a shorter prompt for an external engine.
+
+`lead` and `browser-verifier` ignore any non-Claude assignment.
+
 ## Step 1: Quick Orientation (Lead alone — minimal context use)
 
 Only read what's tiny and critical:
@@ -729,6 +748,8 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
 
    **Reference for risk testers:** If needed, Lead reads `references/risk-testing-example.md` for the detailed case study pattern. Only load this reference when spawning risk testers — not at initialization.
 
+   **If `risk-tester` is on an external engine** (Step 0b table): no `Task()` — write this exact prompt to `.claude/teams/{team}/engine/risk-tester-{n}.prompt.md`, append the Output Contract from `engines.md`, and run the CLI with the **write** sandbox in background (risk testers create throwaway scripts — tell the engine to keep them in `.claude/teams/{team}/tmp/`). Read the report as you would the agent's return value. A report without the script and its actual output is not a verdict — resume the session and ask for the evidence.
+
 2b. 📢 **Print each verdict** as risk tester results come back — what was found and what it changes:
 
    ```
@@ -775,6 +796,20 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
 ## Step 5: Spawn Team and Write State File
 
 Spawn everyone NOW — reviewers (or switch architects to review mode), and coders.
+
+**Engine check before every spawn in this step.** For any teammate role assigned to an external engine, swap `subagent_type` to `agent-teams:proxy-teammate`, keep `name` and `team_name` identical, and prepend to the prompt below:
+
+```
+ROLE: {role id}
+ENGINE: {engine name}, cmd/resume/session pattern: {from engines.md presets, with user overrides applied}
+SANDBOX: read-only   (coder: workspace-write + explicit allowed-file list)
+
+--- ROLE BRIEF (follow literally) ---
+{agents/{role}.md prepared per "Preparing the Role Brief" in engines.md — body and <example> blocks verbatim, tools/model frontmatter dropped, SendMessage instructions translated. Never a summary.}
+--- END ROLE BRIEF ---
+```
+
+Then the normal prompt text follows unchanged. The roster other teammates see is identical — coders address `security-reviewer` either way.
 
 ### 1. Reviewers
 
@@ -1003,6 +1038,11 @@ When you change Phase to VERIFICATION, execute these steps IN ORDER:
 - SendMessage(type="shutdown_request") to all permanent teammates
 - TeamDelete
 - Present Human Checks to user via AskUserQuestion (items that couldn't be auto-verified)
+
+## Engines
+{Omit this whole section if no config file exists — the default is Claude everywhere.}
+- {role}: {engine} {(fallback applied: <reason>) if it fell back}
+- fallback policy: {claude | fail}
 
 ## Team Roster
 ### SIMPLE/MEDIUM:

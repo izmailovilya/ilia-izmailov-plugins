@@ -1,0 +1,38 @@
+{
+  "_readme": "Copy to ~/.claude/agent-teams.json and change only the roles you want elsewhere. Every role defaults to 'claude' — deleting this file restores stock behavior. Engines: claude | codex | kimi | grok. See skills/team-feature/references/engines.md.",
+
+  "enabled": true,
+  "fallback": "claude",
+
+  "roles": {
+    "codebase-researcher": "claude",
+    "reference-researcher": "claude",
+    "web-researcher": "claude",
+    "risk-tester": "claude",
+    "ci-verifier": "claude",
+    "spec-verifier": "claude",
+    "legacy-scanner": "claude",
+
+    "tech-lead": "claude",
+    "architect": "claude",
+    "architect-frontend": "claude",
+    "architect-backend": "claude",
+    "architect-systems": "claude",
+
+    "security-reviewer": "claude",
+    "logic-reviewer": "claude",
+    "quality-reviewer": "claude",
+    "unified-reviewer": "claude",
+
+    "coder": "claude"
+  },
+
+  "_engines_note": "Optional. Only needed when a CLI changes its flags or you want a different model/effort. Omit entirely to use the built-in presets.",
+  "engines": {
+    "codex": { "model": "gpt-5.6-sol", "effort": "xhigh" },
+    "kimi": { "model": "kimi-code/k3" },
+    "grok": { "model": "grok-4.6", "effort": "high" }
+  },
+
+  "_locked_roles": "lead and browser-verifier are always Claude — lead owns the team and user dialogue, browser-verifier needs the Chrome extension. Assigning them elsewhere is ignored."
+}

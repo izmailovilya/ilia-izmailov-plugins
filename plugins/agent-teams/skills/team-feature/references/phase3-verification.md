@@ -90,7 +90,9 @@ Bash: curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 {base_url}
 
 📢 Before spawning: `🧪 Verification: {N} automated checks (build, tests, browser, spec).`
 
-Only spawn agents for sections with items. Launch ALL in parallel:
+Only spawn agents for sections with items. Launch ALL in parallel.
+
+**Engine check** (Step 0b table): `ci-verifier` and `spec-verifier` on an external engine are not spawned as Claude agents — write the same prompt to a file and run the CLI in background (read-only sandbox for `spec-verifier`; `ci-verifier` needs the **write** sandbox because builds and tests write artifacts). `browser-verifier` is always Claude. A verifier report is only usable if it quotes actual command output — an external engine claiming "tests pass" without the output counts as BROKEN, not PASS.
 
 ```
 Task(subagent_type="agent-teams:ci-verifier",
@@ -232,7 +234,7 @@ Coders appended entries here during Step 5.5 of their workflow. Parse all `## [t
 
 ### 6b. Run a safety scan for legacy coders missed
 
-Dispatch a single Explore subagent to catch what coders might have missed. Give it the list of files touched this session (from commits or state.md):
+Dispatch a single Explore subagent to catch what coders might have missed. Give it the list of files touched this session (from commits or state.md). This is the `legacy-scanner` role — if it is assigned to an external engine (Step 0b table), run the CLI read-only with this same prompt instead of spawning Explore:
 
 ```
 Task(

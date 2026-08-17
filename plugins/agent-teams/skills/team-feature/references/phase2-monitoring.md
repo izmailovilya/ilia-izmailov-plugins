@@ -18,6 +18,7 @@ Feed rules: user's language, product terms, one entry per event, always include 
 | Coder: `LEGACY_FOUND: task #N` | Note it (entries are in LEGACY_REPORT.md; handled in Phase 3). | `🧹 Task #N left old code behind ({N} item(s)) — I'll ask you what to do with it at the end.` |
 | Coder: `REVIEW_LOOP: task #N` | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from context or dispatch researcher. | `⏸️ Task #N: review going in circles ({topic}) — escalated to {tech lead / primary architect} for a ruling.` |
 | Tech Lead / Primary Architect: `DECISION: [one-liner]` | No action — decision is already logged in DECISIONS.md by its author. | `📋 Decision: {the one-liner, in product terms — what was decided and why}` |
+| Proxy teammate: `ENGINE_DOWN: {role}. {reason}` | Apply `fallback` from the engine config (default `claude`): spawn the normal Claude teammate under the **same name**, then SendMessage affected coders: "ROSTER UPDATE: {role} is back — re-send any pending REVIEW request." If `fallback: "fail"`, stop the run and report. | `⚙️ {engine} отвалился на роли «{role}» ({reason}) — переключил на Claude, работа продолжается.` |
 | Unified reviewer: `ESCALATE TO MEDIUM` | Spawn 3 specialized reviewers (security, logic, quality) + tech-lead. SendMessage to coder: "ROSTER UPDATE: your reviewers are now security-reviewer, logic-reviewer, quality-reviewer. Your architectural gate is now tech-lead. Cancel pending unified-reviewer wait and re-send REVIEW to new roster." Shut down unified-reviewer. | `⚖️ Task turned out riskier than expected ({reason}) — strengthening the team: 3 specialized reviewers + tech lead.` |
 
 ## Task-Done Digest
@@ -63,6 +64,7 @@ If context feels incomplete or current state is unclear:
    - `EXECUTION` → follow Phase 2 Instructions (monitor mode)
    - `VERIFICATION` → follow Phase 3 Instructions **step by step** (the literal commands are in state.md)
 3. The state file contains EVERYTHING needed — team roster, task statuses, and exact commands to run.
+4. Check the `## Engines` section. If present, later spawns must keep honoring it — do NOT re-read `~/.claude/agent-teams.json` and do NOT re-probe the CLIs. If the section is absent, every role is Claude.
 
 **This is the safety net.** State.md is an executable script, not just a log.
 
@@ -70,7 +72,7 @@ If context feels incomplete or current state is unclear:
 
 When a coder reports "DONE" and unassigned tasks remain:
 1. Update state.md (mark task completed)
-2. If active coders < max AND unassigned tasks exist:
+2. If active coders < max AND unassigned tasks exist (if the `coder` role is on an external engine per the `## Engines` section of state.md, spawn `agent-teams:proxy-teammate` with the same name and the coder role brief instead — see `engines.md` Mechanic B):
    ```
    Task(
      subagent_type="agent-teams:coder",

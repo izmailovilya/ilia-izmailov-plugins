@@ -251,6 +251,52 @@ These conventions are used by `/team-feature` as few-shot examples for coders. R
 | **CI Verifier** | One-shot | Runs build, typecheck, lint, tests — reports PASS/FAIL/BROKEN |
 | **Browser Verifier** | One-shot | Navigates pages, checks elements and interactions via Chrome |
 | **Spec Verifier** | One-shot | Checks file existence, exports, API responses, config values |
+| **Proxy Teammate** | Same as the role it carries | Holds a team role while delegating the thinking to an external CLI agent — see Engines below |
+
+## Engines — Optional External CLI Agents
+
+**Every role runs on Claude by default. With no config file, nothing here applies** — the pipeline
+behaves exactly as documented above.
+
+If you have other coding CLIs installed, you can reassign individual roles to them. Work moved out
+bills against that tool's subscription instead of your Claude context and rate limit. Codex in
+particular over-reports issues, which is useful for review and risk work as long as findings are
+triaged before they reach a coder — the pipeline does that triage for you.
+
+Copy `agent-teams.example.json` to `~/.claude/agent-teams.json` and change only what you want:
+
+```json
+{
+  "roles": {
+    "security-reviewer": "codex",
+    "risk-tester": "codex",
+    "web-researcher": "grok"
+  }
+}
+```
+
+Supported engines: `claude` (default), `codex`, `kimi`, `grok`.
+
+How each kind of role is moved:
+
+- **One-shot roles** (researchers, risk tester, CI/spec verifiers, legacy scan) — no Claude agent is
+  created; the orchestrator runs the CLI and reads its report.
+- **Team roles** (reviewers, tech lead, architects, coder) — a thin Claude proxy joins the team
+  under the same name and delegates to a persistent external session, so review round 2 remembers
+  round 1. Other teammates see no difference.
+
+Guarantees that hold regardless of configuration:
+
+- `lead` and `browser-verifier` always run on Claude (team ownership; Chrome extension).
+- Missing binary, auth failure, or a dead engine mid-run falls back to Claude automatically and
+  says so in the progress feed. Set `"fallback": "fail"` if you would rather the run stop.
+- External output is never trusted as-is: findings are verified against the cited lines before they
+  block a task, and verifier reports must quote real command output.
+- Decisions stay on the Claude side — engines produce findings, not approvals.
+- `--engines=off` on a single run ignores the config entirely.
+
+Full spec — role registry, config schema, CLI presets, failure handling:
+`skills/team-feature/references/engines.md`.
 
 ## Structure
 
@@ -265,6 +311,7 @@ agent-teams/
 │   ├── codebase-researcher.md
 │   ├── coder.md
 │   ├── logic-reviewer.md
+│   ├── proxy-teammate.md
 │   ├── quality-reviewer.md
 │   ├── reference-researcher.md
 │   ├── risk-tester.md
@@ -283,7 +330,13 @@ agent-teams/
 │   │   └── references/
 │   │       └── interview-principles.md
 │   └── team-feature/
-│       └── SKILL.md
+│       ├── SKILL.md
+│       └── references/
+│           ├── engines.md
+│           ├── phase1-planning.md
+│           ├── phase2-monitoring.md
+│           └── phase3-verification.md
+├── agent-teams.example.json
 └── README.md
 ```
 
