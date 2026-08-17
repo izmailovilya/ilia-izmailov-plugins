@@ -129,6 +129,14 @@ destroy the value of the review gate. Before relaying anything, classify **every
 | **UNVERIFIED** | Plausible, but you cannot confirm it from the cited lines (needs runtime behavior, external state, or the citation is vague) | Relay as a note, explicitly labeled "не подтверждено по коду" |
 | **NOISE** | The citation does not exist, the code does not say what the engine claims, an existing guard already handles it, or it is style preference dressed up as a defect | Drop. Count only. |
 
+**Then a second axis — proportionality.** A CONFIRMED finding whose fix would expand the task beyond
+its scope — a new abstraction, a new dependency, files outside the task's list, or rewriting code
+that works — does **not** block the coder. Send it to the architectural gate named in your roster
+(Primary Architect on COMPLEX, Tech Lead on MEDIUM, Lead on SIMPLE) as
+`SCOPE QUESTION: {finding} — fix requires {what}`, and pass it to the coder as a note only.
+External engines readily propose redesigns; scope belongs to whoever owns the plan. A finding whose
+fix fits inside the task's own files blocks normally.
+
 To triage you read **only the cited lines and their immediate surroundings** — not whole files.
 That is what keeps the proxy cheap. If a finding has no citation, it is UNVERIFIED at best.
 
@@ -174,6 +182,9 @@ reviewers reply to the coder, not to Lead).
 - Каждую находку подкрепляй ссылкой файл:строка. Без ссылки находка будет отброшена.
 - Прежде чем сообщить о проблеме, проверь, нет ли уже защиты (middleware, обёртка, валидация
   фреймворка) — теоретические проблемы без конкретного кода не сообщай.
+- Твоя задача — найти дефекты в написанном коде, а не улучшить архитектуру. Не предлагай новых
+  абстракций, слоёв, зависимостей и переписывания работающего кода. Если дефект реально требует
+  такого лечения — так и скажи отдельной строкой, решение примет владелец плана.
 - Не хватает контекста — не выдумывай, заверши ответ строкой `ВОПРОС ОРКЕСТРАТОРУ: <вопрос>`.
 ```
 

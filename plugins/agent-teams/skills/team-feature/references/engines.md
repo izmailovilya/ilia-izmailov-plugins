@@ -49,6 +49,12 @@ Canonical role IDs. These are the keys usable in the config `roles` block.
 
 `lead` and `browser-verifier` ignore any assignment other than `claude` — warn once and continue.
 
+**COMPLEX runs get an external review layer.** On COMPLEX the architects normally replace the three
+reviewers, so a reviewer assignment would otherwise do nothing. Instead, any reviewer role on an
+external engine is spawned **in addition to** the architects: architects keep design, coherence and
+every ruling; the external reviewers hunt defects only. Costs nothing on Claude. See
+`phase1-planning.md` Step 5.
+
 ---
 
 ## Config File

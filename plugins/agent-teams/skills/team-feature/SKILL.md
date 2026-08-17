@@ -138,7 +138,7 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 
 **SIMPLE** differences: Skip Tech Lead, skip risk analysis, unified reviewer only, faster flow.
 **MEDIUM** differences: Full flow, Tech Lead validates plan, 3 separate reviewers, risk analysis.
-**COMPLEX** differences: 3 Architects debate specification before coding, one becomes Primary Architect, architects become reviewers.
+**COMPLEX** differences: 3 Architects debate specification before coding, one becomes Primary Architect, architects become reviewers. If reviewer roles are assigned to an external engine, they are spawned *in addition* to the architects as a defect-hunting layer — see the Engines section.
 
 ## Protocol Overview
 
