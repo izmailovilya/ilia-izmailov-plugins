@@ -882,22 +882,7 @@ CONFIRMED RISKS FROM RISK ANALYSIS:
 Wait for REVIEW requests from coders via SendMessage."
 ```
 
-No separate security/logic/quality reviewers for COMPLEX **when everything runs on Claude** — architects cover all review areas through their domain expertise.
-
-**Exception — external review layer on COMPLEX.** If `security-reviewer`, `logic-reviewer` or `quality-reviewer` is assigned to an external engine in the Step 0b table, spawn those reviewers **in addition to** the architects, as proxy teammates (Mechanic B). They cost nothing on Claude — that is the whole point of putting them elsewhere — and COMPLEX is where an extra bug-hunting pass is worth the most.
-
-Division of labour when both layers are present, state it in every prompt so nobody duplicates:
-
-| Layer | Runs on | Job |
-|-------|---------|-----|
-| Architects | Claude | Domain design, cross-task coherence, convention fit, **all decisions** — approving deviations, arbitrating review loops, ruling on scope |
-| External reviewers | Codex / Kimi / Grok | Defect hunting only — bugs, injections, race conditions, edge cases, in the code as written |
-
-Add to the architects' SWITCH TO REVIEW MODE message: `Additional defect-hunting reviewers are active: {names}. They report bugs only — design, conventions and every ruling stay yours.`
-
-Add to each coder's roster: the external reviewers, alongside the architects.
-
-**Scope guard — applies to external reviewers at every complexity level.** A confirmed finding whose fix would expand the task — new abstraction, new dependency, files outside the task, rewriting working code — does NOT block the coder. The proxy sends it to the architectural gate (Primary Architect on COMPLEX, Tech Lead on MEDIUM, Lead on SIMPLE) as `SCOPE QUESTION: {finding} — fix requires {what}` and passes it to the coder as a note only. External engines are prone to proposing redesigns; scope is decided by whoever owns the plan, not by a reviewer.
+No separate security/logic/quality reviewers for COMPLEX — architects cover all review areas through their domain expertise.
 
 ### 2. Coders (up to --coders in parallel, uses `agents/coder.md`)
 
