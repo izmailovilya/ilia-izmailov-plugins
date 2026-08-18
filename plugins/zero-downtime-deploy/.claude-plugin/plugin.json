@@ -1,0 +1,17 @@
+{
+  "name": "zero-downtime-deploy",
+  "version": "0.1.0",
+  "description": "Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed",
+  "author": {
+    "name": "Ilia Izmailov",
+    "url": "https://github.com/izmailovilya"
+  },
+  "keywords": [
+    "deployment",
+    "zero-downtime",
+    "ci-cd",
+    "rollback",
+    "migrations",
+    "devops"
+  ]
+}

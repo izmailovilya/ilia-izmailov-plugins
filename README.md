@@ -81,6 +81,27 @@ Two-phase approach: first understands YOUR project (2 scouts), then explores the
 
 ---
 
+### zero-downtime-deploy
+
+Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed.
+
+```bash
+/plugin install zero-downtime-deploy@ilia-izmailov-plugins
+```
+
+**Usage:**
+```
+/zero-downtime-deploy
+/zero-downtime-deploy "у нас 502 при выкатке"
+/zero-downtime-deploy "безопасно ли выкатывать эту миграцию"
+```
+
+Two scouts map the deploy in parallel — one reads the repository, one looks at the live system read-only — and drift between them is the first finding. Then a hard gate: the plan as a "now → after" table, nothing changed until you say go. Verification runs real commands only, smoke tests address the new version directly, and the rollback is rehearsed with a measured time before anything is called ready. An adversarial critic then attacks the finished scheme. Keeps your current platform; never introduces Kubernetes or a new cloud.
+
+[Read more →](./plugins/zero-downtime-deploy/README.md)
+
+---
+
 ### vibe-audit
 
 Interactive feature audit for vibe-coded projects. Finds dead code, unused features, and experiments through conversation.

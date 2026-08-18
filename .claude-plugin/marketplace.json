@@ -15,7 +15,7 @@
       "name": "agent-teams",
       "source": "./plugins/agent-teams",
       "description": "Launch a team of AI agents to implement features with code review gates",
-      "version": "0.4.2"
+      "version": "0.5.4"
     },
     {
       "name": "team-research",
@@ -28,6 +28,12 @@
       "source": "./plugins/repo-scout",
       "description": "Scout open-source repos for patterns and ideas to improve your own product",
       "version": "0.1.1"
+    },
+    {
+      "name": "zero-downtime-deploy",
+      "source": "./plugins/zero-downtime-deploy",
+      "description": "Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed",
+      "version": "0.1.0"
     }
   ]
 }
