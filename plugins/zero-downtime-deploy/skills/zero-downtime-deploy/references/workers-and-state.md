@@ -39,6 +39,33 @@ Mechanisms that actually work, in order of preference:
 "Ensure jobs are idempotent or use locking" without naming which one is an empty instruction — pick
 the mechanism and write it down.
 
+## Work that outlives the drain window
+
+Some operations are simply longer than any sane shutdown budget: a document being parsed chunk by
+chunk, a batch job, a paid model call in a loop. Do not stretch the grace period to cover them —
+make them interruptible instead.
+
+The pattern that works, and the ordering matters:
+
+1. One dependency-free module holding a synchronous boolean: `isShuttingDown()` / `setShuttingDown()`.
+   Synchronous because it is read in a hot loop between units of work.
+2. `setShuttingDown()` is the **first** line of the shutdown handler, before draining anything else,
+   so an in-flight loop sees it as early as possible.
+3. The loop uses **commit-then-check**: finish the current unit, persist its checkpoint, *then* look
+   at the flag and bail. Checking first and bailing mid-unit loses that unit's work — and if the unit
+   costs money (a model call, a paid API), a mid-unit bail means paying for it twice on resume.
+4. What the bail leaves behind must be resumable: a checkpoint that recovery can pick up, not a
+   half-finished record that looks complete.
+
+## Don't leave the user staring at a spinner
+
+When the process goes down, whatever was "in progress" in the interface stays that way forever unless
+shutdown says otherwise. Before exiting, mark interrupted runs as failed (or as resumable) and give
+that write a moment to land — a second or two inside the shutdown budget.
+
+The rule: **shutdown must leave user-visible state consistent, not just the process dead.** A person
+who reloads after a release should see a clear error or a resumable job, never an eternal "выполняется".
+
 ## Order of rollout: backend, then frontend
 
 - **Backend first, and it must keep serving the old frontend.** Only additive API changes in a

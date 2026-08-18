@@ -17,13 +17,15 @@ something that was actually executed, not just written down.
 
 ## What it does
 
-1. **Maps how traffic reaches the process today** — two scouts in parallel: one reads the repository,
-   one looks at the live system read-only. Where they disagree, the drift is the first finding.
+1. **Maps how traffic reaches the process today** — a scout reads the repository, and if there is a
+   route to the live system (ssh, platform CLI), a second one checks what is actually running,
+   read-only. Where the two disagree, that drift is the first finding.
 2. **Stops and shows you the plan** as a "now → after" table. Nothing is changed until you say go.
 3. **Changes only what the chosen traffic switch needs** — readiness, draining, the switch itself,
    migrations, workers and state.
 4. **Verifies with real commands**, smoke-tests the new version directly (not through the public
-   domain, which would test the old one), and rehearses the rollback with a measured time.
+   domain, which would test the old one), measures how many requests actually failed during the
+   switch, and rehearses the rollback with a measured time.
 5. **Sends an adversarial critic** over the finished scheme to find where users would still see
    errors and where the rollback would fail.
 6. **Reports in three lists**: what was verified, what was not, and which assumptions were never
@@ -39,9 +41,10 @@ something that was actually executed, not just written down.
 
 ## Honest by construction
 
-Every production fact is tagged `CHECKED` (a command ran, output included), `INFERRED` (from
-repository files only) or `UNCHECKED`. Every check is `PASS`, `FAIL`, `SKIP` or `NOT-RUN`. A rollback
-that was never executed is reported as such — because the report is what you will lean on at 3am.
+Every check carries one of five statuses — `PASS`, `FAIL`, `SKIP(n/a)`, `SKIP(no access)`, `NOT-RUN` —
+and every claim about production names its source inline (live system, with the command; or the
+repository file). A rollback that was never executed is reported as such, and the switch itself is
+measured: «во время переключения 1500 запросов, ошибок 0». The report is what you will lean on at 3am.
 
 ## Structure
 
@@ -49,15 +52,14 @@ that was never executed is reported as such — because the report is what you w
 skills/zero-downtime-deploy/
   SKILL.md                      protocol, gates, evidence vocabulary, report contract
   references/
-    discovery.md                the five decisive questions, drift, re-entry, no access
-    strategies.md               one decisive question, invariants, capacity, concurrency
+    discovery.md                five decisive questions, drift, re-entry, picking the strategy
     traffic-switch.md           readiness, keep-alive, draining, shutdown order
     migrations.md               expand → migrate → contract, rollback window, locks
-    workers-and-state.md        queues, cron, sessions, caches, bundles, front/back order
-    verification.md             what counts as verified, smoke tests, bake window, drill
-    platform-playbooks.md       VM+nginx, Docker Compose, managed platforms, GitHub Actions
+    workers-and-state.md        queues, cron, long interruptible work, sessions, caches, bundles
+    verification.md             what counts as verified, smoke tests, measuring the switch, drill
+    platform-playbooks.md       Docker Swarm, VM+nginx, Compose, managed platforms, GH Actions
 agents/
-  infra-scout.md                repository side, read-only, reports INFERRED
-  live-drift-checker.md         live system, strictly read-only, CHECKED or UNCHECKED
+  infra-scout.md                repository side, read-only, every finding cites a file
+  live-drift-checker.md         live system, strictly read-only — spawned only if there's a route
   rollback-critic.md            adversarial: proves the rollback won't work
 ```

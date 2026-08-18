@@ -73,8 +73,8 @@ Work through these deliberately — most reports fail on more than one:
 - **Everything outside HTTP.** Duplicate cron runs across two live versions, messages produced by the
   new version that the old worker cannot read after a rollback, in-memory sessions, a shared cache
   whose value shape changed, old asset chunks deleted while clients still reference them.
-- **Claims vs evidence.** Any statement in the report that rests on an INFERRED or UNCHECKED fact but
-  is worded as certain.
+- **Claims vs evidence.** Any statement worded as certain that rests only on a repository file, or on
+  a check nobody ran.
 
 ## Report Format
 

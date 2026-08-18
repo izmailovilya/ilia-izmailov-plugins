@@ -47,8 +47,8 @@ Live side — `live-drift-checker` covers this, read-only:
 | Instance count | `docker ps`, `pm2 list`, platform CLI |
 | Managed platform state | `fly status`, `render services list`, `gcloud run revisions list`, `aws ecs describe-services` |
 
-Never run anything that writes. If a command needs credentials that are not present, the answer is
-`UNCHECKED` — not a guess.
+Never run anything that writes. If a command needs credentials that are not present, the fact simply
+has no live source — say so; never fill the gap with a guess from the repository.
 
 ## Drift is a finding, not a nuisance
 
@@ -72,7 +72,7 @@ Signs of a previous run: a CI deploy workflow, `deploy.sh` / `rollback.sh`, a he
 
 1. Read what the previous run claimed — that is the **declared** state.
 2. Compare against the live system — that is the **actual** state.
-3. The goal of a re-run is to close `UNCHECKED` items and drift, not to rebuild.
+3. The goal of a re-run is to close `NOT-RUN` items and drift, not to rebuild.
 
 Do not create a second workflow, a second health endpoint, or a parallel deploy script "just in
 case". If declared and actual agree and nothing new appeared, say so and propose only the delta:
@@ -83,7 +83,52 @@ new workers, new migrations, a new endpoint since last time.
 This is common and it is fine. What changes is what you may claim:
 
 - Do the repository work and the safe local checks.
-- Every conclusion resting on an unverified assumption gets tagged and collected into one list,
-  "предположения, которые я не смог проверить", at the end of the report.
+- Every conclusion resting only on repository files is collected into one list, "предположения,
+  которые я не смог проверить", at the end of the report.
 - List the one-time actions the user must perform outside the repository, as commands they can run.
 - Never invent a staging environment, and never describe the pipeline as proven in production.
+
+## Picking the strategy — one decisive question
+
+**Is there something in front of the app that can move traffic between two versions without dropping
+open connections, and is there room to run both at once?**
+
+| Answer | What that means |
+|---|---|
+| The platform switches traffic itself (managed PaaS, orchestrator with rolling updates) | Use its native mechanism. Do not build a second switch beside it. Your work is readiness, draining, migrations, and a rollback you can prove. |
+| There is a proxy you control and the host can hold two versions | Two slots behind the proxy: start the new one, prove it, repoint, drain the old one. |
+| There is a proxy, but no room for two versions | Free capacity first, or accept a short planned restart. Say which, in Phase A. |
+| Nothing in front — the process owns the public port | Zero downtime is unreachable without adding something in front. That is a real change: put it to the user as a fork, don't do it silently. |
+
+Canary only when the platform already supports it and the user actually needs it.
+
+### The invariants — true on every platform
+
+- The new version takes no production traffic until readiness passes.
+- The old version is not stopped until traffic has moved off it *and* drained.
+- The production version has an immutable id — commit SHA, image digest, release id. Never `latest`.
+- One production deploy at a time; a new push must not interrupt one that is mid-switch.
+- **The deployed version lives in a committed file**, not in someone's memory or in a dashboard. Then
+  "what is live?" is answerable from git, and rollback is a one-line revert plus a re-run. Record the
+  current stable id *before* the deploy — never "the previous entry in the list", which reorders.
+- The artifact that was verified is the artifact that ships.
+
+That last one is the right default, not a law: when configuration is baked in at build time
+(`NEXT_PUBLIC_*`, `import.meta.env`, compiled asset URLs), one artifact physically cannot serve two
+environments. Then say the build is per-environment and keep source and toolchain provably identical
+instead of pretending to promote one artifact.
+
+### Capacity, before committing to two slots
+
+Two versions alive at once means, briefly, double the footprint: memory and CPU headroom, a free port
+or container slot, and database connections (two versions × pool size under the server limit). Any
+per-instance lock or single-writer constraint breaks the plan outright. Better an honest planned
+restart than a blue-green that exhausts the connection pool mid-switch.
+
+### One deploy at a time
+
+A CI-level lock protects the CI job only — not a manual deploy, a console deploy, or a migration run
+by hand at the same moment. Lock the production *environment* where the platform allows it, and make
+the deploy idempotent so a retry of the same version is a no-op rather than a second switch. On
+GitHub Actions use a concurrency group per environment with `cancel-in-progress: false`, so a new
+push queues behind a deploy that is already switching traffic instead of killing it halfway.

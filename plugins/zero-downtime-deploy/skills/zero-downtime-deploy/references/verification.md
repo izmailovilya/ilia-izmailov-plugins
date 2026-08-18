@@ -12,7 +12,7 @@ Report each as a row: the command, whether it applied, whether it ran, its exit 
 
 | Check | Command found in project | Status |
 |---|---|---|
-| install from lockfile | … | PASS / FAIL / SKIP(n/a) |
+| install from lockfile | … | PASS / FAIL / SKIP(n/a) / SKIP(no access) / NOT-RUN |
 | lint | … | … |
 | typecheck | … | … |
 | tests | … | … |
@@ -45,6 +45,32 @@ pipeline must fail rather than wait forever.
 On a managed platform where the pre-switch version is only reachable through a preview URL that
 points at a different database, say so: that smoke test does not prove the production path, and
 calling it proof is false confidence.
+
+## Measure the switch itself
+
+Everything above proves the new version works. None of it proves the switch was invisible — that is
+a separate number, and without it "zero downtime" stays an opinion.
+
+Start a simple probe before the deploy and stop it after, then report what it counted:
+
+```bash
+# before triggering the deploy
+end=$(( $(date +%s) + 300 ))
+ok=0; bad=0
+while [ "$(date +%s)" -lt "$end" ]; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 https://<production-url>/<cheap-route>)
+  if [ "$code" = "200" ]; then ok=$((ok+1)); else bad=$((bad+1)); echo "$(date +%T) $code"; fi
+  sleep 0.2
+done
+echo "ok=$ok failed=$bad"
+```
+
+Report the result as a sentence a person can act on: «во время переключения 1500 запросов, ошибок 0»
+or «ошибок 7, все 502 в течение 3 секунд — вот когда». A non-zero count is not a failure of the work;
+it is the honest baseline everything after this is measured against.
+
+Where this cannot run (no public route reachable from here, no permission), it is `SKIP(no access)`
+with the script handed to the user — never a claim that the switch was clean.
 
 ## After the switch: a bake window
 
@@ -82,7 +108,7 @@ Described in the skill's Phase C gate. What makes the drill real:
 - the old code still runs on the current schema (the rollback window)
 - the command actually moves traffic, and the elapsed time is measured
 
-Anything not exercised is `SKIP(capability)` or `NOT-RUN`, with the exact command written out for the
+Anything not exercised is `SKIP(no access)` or `NOT-RUN`, with the exact command written out for the
 user. "Кнопка есть, живьём не гоняли" is an acceptable answer. "Откат настроен" is not.
 
 ## What each deploy should leave behind
@@ -92,8 +118,17 @@ deploy leaves: the version id, start and finish time, health check result, smoke
 previous version id, and whether the switch succeeded or a rollback happened. That last pair is what
 makes the next rollback possible.
 
+## Shutdown behaviour is testable
+
+Rare, but worth naming: if a release has already bitten you — work lost on a restart, a job that
+resumed twice, a record left half-written — that scenario can be covered by an ordinary test that
+flips the shutdown flag and asserts what survives. Suggest it only after such a bug has actually
+happened; writing shutdown tests preemptively on a project that has never been bitten is exactly the
+over-engineering this skill refuses elsewhere.
+
 ## The final report
 
 Three lists, always, in this order: **verified** (with commands and output), **not verified** (with
-the command the user runs to close each), and **assumptions** that stayed INFERRED or UNCHECKED.
-A report without the third list is dishonest, and the third list being long is not a failure.
+the command the user runs to close each), and **claims that rest only on repository files** and were
+never confirmed against the live system. A report without the third list is dishonest, and the third
+list being long is not a failure.

@@ -33,7 +33,7 @@
       "name": "zero-downtime-deploy",
       "source": "./plugins/zero-downtime-deploy",
       "description": "Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

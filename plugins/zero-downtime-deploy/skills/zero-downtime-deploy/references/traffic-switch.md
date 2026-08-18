@@ -64,14 +64,18 @@ is not graceful.** "We sent SIGTERM" is not evidence.
 8. Exit.
 
 Handle the termination signal the platform actually sends, and make the process exit on its own
-before the platform's hard kill.
+before the platform's hard kill: **the app's own shutdown timeout must be shorter than the platform's
+grace period**, with a force-exit timer as the backstop. Budget each stage of the shutdown so the
+stages together fit inside that timeout — a drain that can outlast it is the same as no drain.
 
 ## Long-lived connections
 
 - **WebSocket / SSE:** they will not drain on their own. Either the client reconnects (make sure it
   does, with backoff) or the server closes them deliberately at the start of the drain with a code
   the client understands as "reconnect". Otherwise the grace period expires and everyone is cut at
-  once.
+  once. Give this stage its own small budget — a few hundred milliseconds is usually enough to close
+  them cleanly — and drain them *before* stopping queues and the database, so clients reconnect to a
+  live process instead of hanging on a dying one.
 - **Long requests (uploads, exports, streaming responses):** the drain timeout must exceed them, or
   they are collateral on every release. If they can run for minutes, that is a design fact to state
   in Phase A, not something to paper over.

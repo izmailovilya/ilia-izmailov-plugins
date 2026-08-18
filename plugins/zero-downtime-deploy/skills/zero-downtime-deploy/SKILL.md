@@ -42,33 +42,31 @@ for a second one, a fixed port, a single-writer process, sessions in process mem
 Phase A**, before any file changes. The honest deliverable is then a 5-15 second planned restart at
 a chosen time, not a fake blue-green on top of a single process.
 
-## Evidence — the vocabulary you report in
+## Evidence — one vocabulary, one habit
 
-Every material claim about production carries exactly one tag. There is no untagged claim.
+**Every check carries exactly one status.** There is no sixth status and no unlabelled check.
 
-| Tag | Means |
-|---|---|
-| `CHECKED` | A command ran in this session against the real system; the command and its output are in the report |
-| `INFERRED` | Follows from repository files; the live system was not looked at |
-| `UNCHECKED` | Not verified at all |
-
-And every check in the final report carries exactly one status:
-
-| Status | Means | Blocks completion? |
+| Status | Means | Where it goes |
 |---|---|---|
-| `PASS` | Command ran, output read, command quoted in report | No |
-| `FAIL` | Ran and failed — actual output, not a paraphrase | Yes |
-| `SKIP(capability)` | Cannot be run in this environment — name what is missing | Goes to the human checklist |
-| `SKIP(n/a)` | The project has no such thing (no Docker, no workers) | No |
-| `NOT-RUN` | Nobody ran it — the default for anything you wrote but never executed | Goes to the human checklist |
+| `PASS` | The command ran; its output is in the report | Verified list |
+| `FAIL` | It ran and failed — actual output, not a paraphrase | Blocks completion |
+| `SKIP(n/a)` | The project has no such thing (no Docker, no workers) | Nowhere; it does not apply |
+| `SKIP(no access)` | Cannot run here — name exactly what is missing | Human checklist |
+| `NOT-RUN` | Nobody ran it — the default for anything you wrote but never executed | Human checklist |
+
+**Every claim about production names its source, inline.** Not a tag system — a habit:
+
+> «Приложение стартует юнитом app.service (живой сервер: `systemctl status app`)»
+> «Деплой описан через docker compose (репозиторий: deploy/README.md:12) — на сервере не проверял»
+
+The repository is intent; only the live system is reality. Reading a Dockerfile never becomes a fact
+about production, however plausible it looks.
 
 Rules that override everything else in this skill:
 
 - **A file you wrote is not a check you ran.** Creating `deploy.sh` proves nothing about deploying.
 - **Never write "настроено" / "работает" / "проверено" for anything that is not PASS.** An honest
   NOT-RUN is worth more than a confident guess — the user will lean on this report during an outage.
-- Reading a Dockerfile is `INFERRED`, never `CHECKED`. The repository describes intent; only the
-  live system describes reality.
 - If the user asks "всё готово?", answer with counts: "проверено N из M, не проверено: <список>".
 
 ## Protocol
@@ -80,7 +78,7 @@ Decide first; the two runs produce different work.
 - No CI workflow, no deploy script, no health endpoint, no trace of a previous run → **bootstrap**.
 - Any of those already exist → **audit**. Do not rewrite what works. Find where downtime still leaks
   and fix only that. Re-verify the rollback: one tested at setup time and never rehearsed since is
-  `UNCHECKED`, not "done".
+  `NOT-RUN`, not "done".
 
 In an audit run, drift is the first finding, before any recommendation. Read `references/discovery.md`.
 
@@ -92,23 +90,29 @@ new version replace it without cutting the requests currently in flight?**
 Do not compile an inventory of the stack. Language, framework, and package manager you learn on the
 way; they are not findings.
 
-Launch both scouts in parallel — one reads the repository, one looks at the live system:
+Start with the repository scout. It always applies:
 
 ```
 Task(subagent_type="zero-downtime-deploy:infra-scout", prompt="Project at [cwd]. Map how a deploy
 happens according to the repository: what starts the app, what sits in front of it, how many
-instances, workers and cron, migrations, where secrets come from, what a rollback would look like.
-Report as INFERRED.")
-
-Task(subagent_type="zero-downtime-deploy:live-drift-checker", prompt="Project at [cwd]. Find out what
-is ACTUALLY running in production, read-only: process manager, proxy config on the server, running
-version vs latest commit, instance count, platform CLI state. Tag everything CHECKED or UNCHECKED —
-never guess.")
+instances, workers and cron, migrations, where secrets come from, what a rollback would look like.")
 ```
 
-If there is no way to reach the live system (no ssh, no platform CLI, no credentials), the second
-scout reports that plainly and everything about production stays `INFERRED`. That is a normal
-outcome, not a failure — but it changes what you may claim later.
+**Add the live scout only when there is somewhere for it to go** — an ssh alias, an authenticated
+platform CLI, a read-only API. Check first; spawning an agent to report "no access" is waste. When
+there is a route, run it in parallel with the first:
+
+```
+Task(subagent_type="zero-downtime-deploy:live-drift-checker", prompt="Project at [cwd]. Find out what
+is ACTUALLY running in production, read-only: process manager, proxy config on the server, running
+version vs latest commit, instance count, platform CLI state. Never guess.")
+```
+
+No route to the live system is a normal outcome, not a failure. It changes only one thing: every
+production claim keeps "репозиторий" as its source, and the report says so plainly.
+
+On a small project you may do Phase A yourself instead of spawning anything. Agents earn their place
+when the repository is large or the two pictures need to be built independently — not by default.
 
 **Never average the two.** A disagreement between the repository and the live system is a finding of
 its own, and it comes before any recommendation:
@@ -117,7 +121,8 @@ its own, and it comes before any recommendation:
 > app.service, правленным руками. Пока это расходится, любой скрипт деплоя из репозитория трогает
 > не то, что работает."
 
-Then pick the strategy: `references/strategies.md`. One decisive question, not a menu of six.
+Then pick the strategy — one decisive question, not a menu of six. It is the last section of
+`references/discovery.md`.
 
 #### HARD GATE — the deployment map, then stop
 
@@ -126,7 +131,7 @@ message authorizes Phase A only; silence is not consent.
 
 The map has five parts, none of which may be filled from assumption:
 
-1. **How traffic reaches the process now** — each fact tagged CHECKED / INFERRED / UNCHECKED.
+1. **How traffic reaches the process now** — each fact naming its source (live system / repository).
 2. **Where a release drops requests today** — one line per cause, tied to evidence: "один процесс,
    перезапуск на месте (`systemctl restart app`, deploy.sh:12) → каждый деплой рвёт открытые запросы".
 3. **The chosen strategy and why it is the simplest that works here** — one paragraph.
@@ -152,7 +157,8 @@ Order of work, each with its reference:
 2. **Draining and shutdown** — the proxy must stop sending before the process stops accepting.
    `references/traffic-switch.md`
 3. **The switch itself** — native platform mechanism, immutable version id (never `latest`), one
-   deploy at a time. `references/strategies.md`
+   deploy at a time, and the deployed version recorded in a committed file so "what is live" is
+   answerable from git and rollback is a one-line revert. `references/discovery.md`
 4. **Migrations** — expand → migrate → contract, and the rollback window. `references/migrations.md`
 5. **Workers, cron, queues, sessions, caches, client bundles.** `references/workers-and-state.md`
 
@@ -168,6 +174,12 @@ Two checks matter more than the rest, and both are commonly faked:
   is green no matter what. Read-only paths plus readiness; no invented "safe write".
 - **The rollback must be executed, not described.** See the gate below.
 
+And one number decides whether the headline claim is true at all: **measure the switch**. Run a probe
+against production during the deploy — a request every 200 ms — and count how many did not return
+200. `references/verification.md` has the script. Without that count, "zero downtime" is an opinion;
+with it, the report says «во время переключения 1500 запросов, ошибок 0». Where the probe cannot run,
+it is `SKIP(no access)` and the claim is downgraded accordingly, never dropped silently.
+
 #### HARD GATE — rollback drill
 
 A rollback script that has never run is not a rollback. Before reporting anything as ready, execute
@@ -181,14 +193,15 @@ without explicit approval):
    errored in between.
 
 Report the measured number. "Откат занимает 40 секунд, проверено" is something the user can act on
-at 3am; "откат настроен" is not. No safe place to run it? Do **not** run it — mark `SKIP(capability)`,
+at 3am; "откат настроен" is not. No safe place to run it? Do **not** run it — mark `SKIP(no access)`,
 write the exact command the user must run and what success looks like.
 
 Then state the **rollback window** in one sentence: how many releases back the app can go without
 breaking on the current database schema. After a contract migration that window is zero and the only
 way out is forward — say so explicitly.
 
-Finally, spawn the critic — the one who built it is the worst judge of it:
+Finally, if the scheme is anything beyond a single managed-platform service — two slots, workers,
+migrations, long-lived connections — spawn the critic. The one who built it is the worst judge of it:
 
 ```
 Task(subagent_type="zero-downtime-deploy:rollback-critic", prompt="Here is the scheme as built: [scheme].
@@ -203,20 +216,23 @@ Fold surviving objections into the report as open risks. Do not argue them away.
 The report is for a product person. Structure:
 
 1. The "now → after" table (below) — what changes for a person during a release.
-2. What was actually run, with commands and output — PASS / FAIL.
-3. What was not run — SKIP / NOT-RUN, each with the one command the user runs to close it.
-4. Assumptions that stayed INFERRED or UNCHECKED. Missing this list makes the report dishonest.
-5. Secrets needed and where to create them — never the values, never in chat.
-6. The routine deploy, and the exact rollback procedure as a copy-pasteable command.
-7. Open risks the critic raised.
+2. The measured switch: requests sent during the deploy and how many failed. If it was not measured,
+   say so in the same place — that is where the reader looks for it.
+3. What was actually run, with commands and output — PASS / FAIL.
+4. What was not run — SKIP / NOT-RUN, each with the one command the user runs to close it.
+5. Claims that rest only on repository files, never confirmed against the live system. Missing this
+   list makes the report dishonest.
+6. Secrets needed and where to create them — never the values, never in chat.
+7. The routine deploy, and the exact rollback procedure as a copy-pasteable command.
+8. Open risks the critic raised.
 
 ## Production mutation gate
 
 Never run a production deployment, switch live traffic, change DNS, create or change secrets, run a
 production migration, purge old assets, or delete the previous release without explicit approval for
 that exact action. Before asking, show: what environment changes, the exact commands, the expected
-traffic and data transitions, the rollback path, the observation window, and every remaining
-UNCHECKED assumption.
+traffic and data transitions, the rollback path, the observation window, and every claim that was
+never confirmed against the live system.
 
 No credentials or permissions? Continue with repository work and safe local checks, list the blocked
 commands with who must run them — and never call the result "готово". No access means no claim.
@@ -245,10 +261,9 @@ Load only what the current step needs.
 | When | Read |
 |---|---|
 | Phase A, and every audit run | `references/discovery.md` |
-| Choosing how traffic switches | `references/strategies.md` |
 | Readiness, draining, keep-alive, shutdown order | `references/traffic-switch.md` |
 | Any migration in the release | `references/migrations.md` |
-| Workers, cron, queues, sessions, caches, front/back order | `references/workers-and-state.md` |
+| Workers, cron, queues, sessions, caches, front/back order, long interruptible work | `references/workers-and-state.md` |
 | Phase C and the final report | `references/verification.md` |
 | Once the platform is established | `references/platform-playbooks.md` |
 
