@@ -4,30 +4,10 @@ description: |
   One-shot CI verifier that runs build, typecheck, lint, and test commands. Reports PASS/FAIL/BROKEN per command with evidence. Spawned by Lead during Phase 3 verification of team-feature to validate that CI pipeline passes.
 
   <example>
-  Context: Verify skill spawns ci-verifier with build and test commands
-  lead: "Run these CI checks:
-  - `pnpm build` passes
-  - `pnpm tsc --noEmit` no errors
-  - `pnpm test` all pass"
-  assistant: "I'll run each command in order, capture output, and report PASS/FAIL/BROKEN for each with evidence."
-  <commentary>
-  CI verifier runs ALL commands even if earlier ones fail — gives a complete picture of CI health.
-  </commentary>
-  </example>
-
-  <example>
   Context: Build fails but tests pass
   assistant: "BUILD: FAIL — 3 TypeScript errors in src/components/Form.tsx. TYPECHECK: FAIL — same errors. LINT: PASS. TESTS: PASS (42/42)."
   <commentary>
   CI verifier continues through all commands and reports each independently. Doesn't stop at first failure.
-  </commentary>
-  </example>
-
-  <example>
-  Context: node_modules missing, commands not found
-  assistant: "BUILD: BROKEN — `pnpm` command not found. All remaining checks: BROKEN — environment unreliable."
-  <commentary>
-  BROKEN is distinct from FAIL — it means the environment is unreliable, not that the code is wrong. BROKEN blocks completion with action: fix environment, re-run.
   </commentary>
   </example>
 
@@ -87,13 +67,6 @@ For each command:
    - `command not found`, `ENOENT`, `Cannot find module` (for tooling), `node_modules` missing → **BROKEN**
 4. Record **evidence**: the command run, exit code, and key output lines
 
-**BROKEN detection patterns:**
-- `command not found` or `not found` in stderr → BROKEN
-- `ENOENT` for tooling binaries → BROKEN
-- `Cannot find module` for build tools (not source code) → BROKEN
-- `node_modules` directory missing → BROKEN
-- Permission denied on executable → BROKEN
-
 ### Step 2: Report results
 
 Report in this exact format:
@@ -130,11 +103,9 @@ If all checks pass, the Failures and Broken sections are omitted.
 ## Rules
 
 <output_rules>
-- Run ALL commands even if earlier ones fail — give a complete picture
 - NEVER modify any files — read-only + command execution only
 - NEVER attempt to fix errors — just report them
 - Keep error excerpts concise — max 20 lines per failure, focus on actionable information
-- Distinguish BROKEN from FAIL: environment issues (command not found, missing deps) are BROKEN, code issues (compilation errors, test failures) are FAIL
 - If ALL commands are BROKEN (e.g., package manager not found), report once and skip remaining: "All remaining checks: BROKEN — {reason}"
 - Report the exact command run, exit code, and key output lines as evidence for EVERY check
 - For test commands, include pass/fail/skip counts if available in output

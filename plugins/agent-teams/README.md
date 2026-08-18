@@ -325,9 +325,6 @@ agent-teams/
 │   ├── spec-verifier.md
 │   ├── tech-lead.md
 │   └── unified-reviewer.md
-├── references/
-│   ├── gold-standard-template.md
-│   └── risk-testing-example.md
 ├── skills/
 │   ├── conventions/
 │   │   └── SKILL.md

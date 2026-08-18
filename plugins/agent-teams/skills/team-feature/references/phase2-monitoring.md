@@ -14,7 +14,7 @@ Feed rules: user's language, product terms, one entry per event, always include 
 | Coder: `DONE: task #N` (any variant) | Update state.md (mark completed). If unassigned tasks remain AND active coders < max, spawn new coder with team roster. If coder claimed next task — no spawn needed. | Task-done digest — see "Task-Done Digest" below. |
 | Coder: `DONE: task #N. ALL MY TASKS COMPLETE` | Update state.md. Check if ALL coding tasks done → **change Phase in state.md to VERIFICATION and follow Phase 3 Instructions in state.md step by step.** If unassigned remain, spawn new coder. | Task-done digest. If transitioning: `🏁 All {N} tasks done — moving to verification.` |
 | Coder: `QUESTION: task #N. [question]` | Answer from Phase 1 context if possible. If not — dispatch a researcher (Explore or general-purpose with WebSearch), then SendMessage the answer to coder. | Only if a researcher was dispatched: `🔍 Task #N raised a question ({what, in product terms}) — researching.` Answered-from-context questions are noise, don't print. |
-| Coder: `STUCK: task #N` | Dispatch a researcher to investigate. Adjust task description or reassign to different coder. | `⏸️ Task #N stuck: {problem in product terms} — {what Lead is doing about it}` |
+| Coder: `STUCK: task #N` | First, try to answer from Phase 1 context. Only dispatch a researcher if the problem requires reading code not yet seen. Then: adjust the task, split it, or reassign to a different coder. | `⏸️ Task #N stuck: {problem in product terms} — {what Lead is doing about it}` |
 | Coder: `LEGACY_FOUND: task #N` | Note it (entries are in LEGACY_REPORT.md; handled in Phase 3). | `🧹 Task #N left old code behind ({N} item(s)) — I'll ask you what to do with it at the end.` |
 | Coder: `REVIEW_LOOP: task #N` | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from context or dispatch researcher. | `⏸️ Task #N: review going in circles ({topic}) — escalated to {tech lead / primary architect} for a ruling.` |
 | Tech Lead / Primary Architect: `DECISION: [one-liner]` | No action — decision is already logged in DECISIONS.md by its author. | `📋 Decision: {the one-liner, in product terms — what was decided and why}` |
@@ -37,18 +37,11 @@ Coders' DONE messages carry a SUMMARY / REVIEW / EDGE CASES block (see coder.md 
 
 ## Noise Filter — What NOT to Print
 
-- Routine review nitpicks (naming, style, formatting) — even if the coder lists them
-- Internal mechanics: state.md updates, coder spawns/shutdowns, roster bookkeeping
-- QUESTION events answered from existing context
-- Anything already printed — don't repeat a decision that was already fed
+The "Signal over noise" rules in SKILL.md apply. In addition: **never repeat anything already printed** — a decision that was already fed goes out once.
 
 ## What Lead Does NOT Do
 
-- Do NOT read code files or review code
-- Do NOT run smoke tests or convention checks (coders do self-checks)
-- Do NOT notify reviewers about completed tasks (coders message them directly)
-- Do NOT notify tech-lead about reviews (coders message tech-lead directly)
-- Do NOT forward messages between team members (they communicate directly)
+Full list in SKILL.md and state.md — in short: no reading or reviewing code, no running checks, no forwarding messages (teammates communicate directly).
 
 ## State File Updates
 
@@ -59,15 +52,7 @@ After every event, update `.claude/teams/{team-name}/state.md`:
 
 ## Compaction Recovery
 
-If context feels incomplete or current state is unclear:
-1. Read `.claude/teams/{team-name}/state.md`
-2. Check the **Phase** field — it tells what to do:
-   - `EXECUTION` → follow Phase 2 Instructions (monitor mode)
-   - `VERIFICATION` → follow Phase 3 Instructions **step by step** (the literal commands are in state.md)
-3. The state file contains EVERYTHING needed — team roster, task statuses, and exact commands to run.
-4. Check the `## Engines` section. If present, later spawns must keep honoring it — do NOT re-read `~/.claude/agent-teams.json` and do NOT re-probe the CLIs. If the section is absent, every role is Claude.
-
-**This is the safety net.** State.md is an executable script, not just a log.
+If context feels incomplete or current state is unclear: read `.claude/teams/{team-name}/state.md` — it is self-describing (the **Phase** field tells which phase instructions to follow step by step; roster, task statuses, and exact commands are all there). Honor its `## Engines` section for later spawns — do NOT re-read `~/.claude/agent-teams.json` and do NOT re-probe the CLIs; if the section is absent, every role is Claude.
 
 ## Spawning New Coders
 
@@ -102,8 +87,6 @@ When things go wrong, handle without involving the user:
 
 | Situation | Action |
 |-----------|--------|
-| Coder reports STUCK | First, try to answer from Phase 1 context. Only dispatch a researcher if the problem requires reading code not yet seen. Then: adjust the task, split it, or assign to a different coder. |
-| Coder reports REVIEW_LOOP (3+ review rounds on same task) | Forward to tech-lead (MEDIUM) or Primary Architect (COMPLEX) — they have code context and authority to arbitrate. For SIMPLE: resolve from context or dispatch researcher. |
 | Tech Lead / Primary Architect rejects architecture > 2 times | Review the disagreement. Only dispatch a web researcher if genuinely lacking domain knowledge. Make the final call, document in DECISIONS.md. |
 | Coder escalates "pattern doesn't fit" | Forward to Tech Lead / Primary Architect for decision. If unsure, dispatch a web researcher for best practices. Document decision in DECISIONS.md. |
 | Build/tests fail after all tasks | Create targeted fix tasks. Only fix what's broken, don't redo completed work. |

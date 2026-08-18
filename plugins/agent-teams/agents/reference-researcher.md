@@ -41,7 +41,7 @@ Think of yourself as a curator: you find the 3-7 files that best represent "how 
 
 1. If `.conventions/gold-standards/` exists — check it first, use as primary references
 2. Find the existing feature most similar to what we're building
-3. For each architectural layer this feature touches (UI, API, DB, hooks, tests), find the BEST example file — the one that most developers would say "yes, this is how we do it here"
+3. For each architectural layer this feature touches, find the BEST example file — the one that most developers would say "yes, this is how we do it here": the most similar page/feature, the API/router pattern for similar data, shared utilities or hooks to reuse, design system components, and the database schema/model if data storage is needed
 
 ## What to Find
 
@@ -50,14 +50,6 @@ For each reference file, return:
 - **What pattern it demonstrates** (routing, API, component structure, form handling, DB query, etc.)
 - **The FULL FILE CONTENT** (not a summary — the actual code)
 - **1-2 line note** on what to pay attention to (naming convention, structure, imports)
-
-## Where to Look
-
-- An existing page/feature most similar to what we're building -> FULL CONTENT
-- The API/router pattern used for similar data -> FULL CONTENT
-- Any shared utilities or hooks that should be reused -> FULL CONTENT
-- Design system components used in similar features -> FULL CONTENT
-- Database schema/model if data storage is needed -> FULL CONTENT
 
 ## Output Format
 
@@ -69,14 +61,6 @@ Return 3-7 reference files max, ranked by relevance.
 ### 1. {pattern name} — `{file path}`
 **Demonstrates:** {what pattern this shows}
 **Pay attention to:** {naming, structure, imports to match}
-
-\`\`\`typescript
-{FULL FILE CONTENT}
-\`\`\`
-
-### 2. {pattern name} — `{file path}`
-**Demonstrates:** {what pattern}
-**Pay attention to:** {what to match}
 
 \`\`\`typescript
 {FULL FILE CONTENT}

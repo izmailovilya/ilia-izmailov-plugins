@@ -15,22 +15,6 @@ description: |
   </commentary>
   </example>
 
-  <example>
-  Context: Chrome extension is not available
-  assistant: "Chrome extension not available. Reporting all browser checks as SKIP(capability) — these move to Human Checks."
-  <commentary>
-  Chrome unavailable = SKIP(capability). The system CAN'T verify, not that checks don't apply. User must acknowledge.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Dev server is not running (ECONNREFUSED)
-  assistant: "Dev server not responding (ECONNREFUSED on localhost:3000). Reporting all checks as BROKEN — environment unreliable."
-  <commentary>
-  ECONNREFUSED = BROKEN, not SKIP. The environment is unreliable — fix it and re-run. This is distinct from Chrome missing (SKIP).
-  </commentary>
-  </example>
-
   <example type="negative">
   Context: Browser verifier tries to fix a UI bug
   assistant: "The button is not visible, let me update the CSS..."
@@ -77,10 +61,6 @@ You receive a list of browser checks, each describing what to verify:
 | SKIP(capability) | System can't verify | Chrome extension not available, auth required |
 | SKIP(n/a) | Check doesn't apply | Backend-only feature, no UI to check |
 | BROKEN | Environment unreliable | ECONNREFUSED, dev server down, DNS failure |
-
-**BROKEN vs SKIP(capability):**
-- Chrome extension not available → **SKIP(capability)** — the tool is missing, user must check manually
-- ECONNREFUSED / server not responding → **BROKEN** — the environment is broken, fix it and re-run ALL checks
 
 ## Protocol
 
@@ -145,8 +125,6 @@ Console errors (if relevant): {relevant error messages}
 <output_rules>
 - NEVER modify any files or code — observation only
 - Distinguish BROKEN from SKIP: server down = BROKEN (environment issue), Chrome missing = SKIP(capability) (tool limitation)
-- If Chrome extension is not available, report ALL checks as SKIP(capability) — don't fail or error
-- If dev server is not responding, report ALL checks as BROKEN — don't try individual checks
 - Continue checking even if earlier checks fail — give a complete picture
 - For console error checks, filter out known framework noise (React DevTools, HMR messages)
 - Keep evidence concise — relevant console errors, not full page dumps

@@ -36,31 +36,26 @@ Team Lead orchestrating feature implementation. Coordinate researchers, coders, 
 
 **BUT — the user MUST be consulted for user-facing forks.** Autonomy is about *how*, not *what*. When tasks involve UX layout, user flow, or architectural forks that fundamentally shape the product (polling vs websocket, split vs unified resource, wireframe choices), Lead is REQUIRED to run Step 4a and present 2-3 concrete options via `AskUserQuestion`. Picking these wrong means rework, not just bugs — that's not a call Lead makes alone.
 
-The only reasons to contact the user:
-1. **Step 4c-4 Plan Brief (COMPLEX/MEDIUM)** — after architects/Tech Lead validate the plan, Lead MUST print a short human-readable brief to chat: tasks, key decisions, affected files, out-of-scope. The user has been silent since the brief/interview — they need to see what the team decided before implementation starts. Not a question, a status report. HARD GATE.
-2. **Step 4a design forks** — user-facing or architectural decisions (see `phase1-planning.md` Step 4a). This is a HARD requirement, not optional.
-3. **Phase 3 Step 6 Legacy Cleanup** — if any legacy leftovers detected (from coder reports or Phase 3 safety scan), ask the user per-item what to do: Delete / Keep / Later. Never delete silently, never leave silently.
-4. **Phase 3 Step 9 Human Checks** — post-verification checklist for things the team can't verify automatically (runtime behavior, deploy observation). Always present as a detailed actionable checklist.
-5. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context).
+The only reasons to contact the user (details live in the phase files):
+1. **Plan Brief** — Step 4c-4, COMPLEX/MEDIUM
+2. **Design forks** — Step 4a
+3. **Legacy cleanup** — Phase 3
+4. **Human Checks** — Phase 3
+5. **Task so vague it's impossible to begin** (e.g., just the word "improve" with no context)
 
-Everything else — researchers, not the user.
-
-**Do not confuse autonomy with silence.** Autonomy means Lead decides without asking permission. It does NOT mean Lead works in a black box and never surfaces progress. The user watches the run live — see the Progress Feed section below. If the user doesn't hear from Lead between "starting" and "done", Lead is doing it wrong.
+Everything else — researchers, not the user. Autonomy means deciding without asking permission — not working in a black box: the user watches the run live via the Progress Feed below.
 
 ## Progress Feed — Keep the User in the Loop
 
 The user watches the run in chat and must be able to catch problems in the moment — a wrong decision, a missed risk, a stuck task. Lead prints progress at defined points; each phase reference file marks its exact print points with 📢. Principles:
 
-- **Format follows the phase.** Phase 1 (rare, large events) = short digest blocks after each step: research done, complexity verdict, debate rounds, risk verdicts. Phase 2 (many small events) = live one-liner ticker: task done, decision made, stuck. Phase 3 = progress lines per verification round + the existing final reports.
+- **Format follows the phase** — see the 📢 print points in each phase reference file.
 - **Product language, user's language.** Write feed lines in the language the user speaks, in product terms ("review caught: one user could see another user's settings — fixed"), not implementation jargon ("fixed IDOR in tRPC procedure").
 - **Signal over noise.** Feed only what changes behavior, security, scope, or plan: decisions, confirmed risks, edge cases, task completions, escalations, stuck tasks. Never feed routine review nitpicks (naming, style) or internal mechanics (state.md updates, spawn details).
-- **Cheap by design.** Almost everything printed is data Lead already receives (researcher reports, risk findings, DONE messages). The only extra inbound messages are: architect debate round summaries, coder DONE digests, and DECISION notices from Tech Lead / Primary Architect.
 - **Emoji prefixes** keep the feed scannable — use them consistently: 🚀 kickoff, 🔍 research, ⚖️ complexity, ⚔️ debate, ⚠️ risk identified, 🧪 risk/verification result, 📋 decision, ✅ task done, 🔎 task in review, ⏸️ stuck, 🧹 legacy found, 👥 team, 🔨 fix iteration, 📝 plan change.
 - **The feed never replaces hard gates.** Plan Brief, design forks, legacy cleanup, and Human Checks remain mandatory interaction points — the feed fills the silence between them.
 
-**Context is precious.** Lead is the brain of the team. Don't waste context on raw file contents and search results. Dispatch researchers and receive condensed summaries.
-
-**Exception:** Gold standard files from `.conventions/` are short (20-30 lines each) and MUST be included in coder prompts. Read these directly.
+**Context is precious** — dispatch researchers, receive condensed summaries. Exception: gold standard files from `.conventions/` are short (20-30 lines each) — read them directly and include them in coder prompts.
 
 ## Arguments
 
@@ -103,13 +98,8 @@ subscription, so it costs no Claude context or rate limit.
   approving deviations, resolving review loops, design forks and legacy deletion stay with Lead and
   the Claude-side (or proxy-checked) architectural gate.
 
-> **Full spec — role registry, config schema, engine presets, both mechanics, failure handling:**
-> `references/engines.md`
-
-**Step 0b (Phase 1, right after the kickoff roadmap):** resolve the engine table per `references/engines.md`. Read
-`~/.claude/agent-teams.json`; missing/invalid/`enabled:false`/`--engines=off` → all roles Claude,
-stop there. Otherwise probe the referenced CLIs with one `command -v` call, record the table in
-state.md under `## Engines`, and print one 📢 line naming the non-Claude roles.
+**Step 0b:** resolve the engine table per `references/engines.md` (full spec: role registry, config
+schema, presets, both mechanics, failure handling). No config file → one Read and exit.
 
 ## Roles
 
@@ -136,10 +126,6 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 | **MEDIUM** (2-3 MEDIUM triggers, 0 COMPLEX) | Lead + Coder + 3 Reviewers + Tech Lead | 6 |
 | **COMPLEX** (4+ MEDIUM or 1+ COMPLEX trigger) | Lead + 3 Architects (debate → review) + Coder(s) + Researchers + Risk Testers | 5-8+ |
 
-**SIMPLE** differences: Skip Tech Lead, skip risk analysis, unified reviewer only, faster flow.
-**MEDIUM** differences: Full flow, Tech Lead validates plan, 3 separate reviewers, risk analysis.
-**COMPLEX** differences: 3 Architects debate specification before coding, one becomes Primary Architect, architects become reviewers.
-
 ## Protocol Overview
 
 ### Phase 1: Discovery, Planning & Setup
@@ -148,7 +134,7 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 
 Execute these steps in order:
 
-0b. **Resolve engines** — see the Engines section above and `references/engines.md`. One Read; if no config file exists, this step ends immediately and every role is Claude.
+0b. **Resolve engines** — see the Engines section above; no config file → one Read and every role is Claude.
 
 1. **Quick orientation** (Lead alone) — read CLAUDE.md, check `.conventions/`, glob top-level layout. Do NOT read source files.
 
@@ -158,9 +144,9 @@ Execute these steps in order:
 
 4. **Validate plan** — SIMPLE: skip. MEDIUM: Tech Lead validates. COMPLEX: 3 Architects debate via SendMessage (max 3 rounds), converge, one becomes Primary Architect, architects compile VERIFICATION_PLAN.md.
 
-4c-4. **Plan Brief to User — HARD GATE (COMPLEX/MEDIUM)**. After plan validation, Lead MUST print a short status brief to chat: task list, key decisions from the architect debate (or Tech Lead review), files/modules affected, out-of-scope, open questions. This is NOT a question — it's a status report so the user knows what the team decided before implementation begins. The user has been silent since the brief/interview — break the silence here. SIMPLE skips this. See `phase1-planning.md` Step 4c-4.
+4c-4. **Plan Brief to user — HARD GATE** (COMPLEX/MEDIUM; SIMPLE skips). See `phase1-planning.md` Step 4c-4.
 
-4a. **Design options — REQUIRED SCAN** (skip only for pure refactoring/bug fixes). Scan every task for UX or architectural forks: UI layout, user flow, REST vs WebSocket, split vs unified resource, data model shape, integration choice. For every fork found, present 2-3 concrete options via `AskUserQuestion` with ASCII wireframes (UX) or flow diagrams (architecture). Max 3 decision points per feature. Update task descriptions with chosen approach and log in DECISIONS.md. **Do NOT skip this step silently** — if no forks were found, state explicitly in the run log: "Step 4a: scanned N tasks, no user-facing forks detected."
+4a. **Design options — required scan** (skip only for pure refactoring/bug fixes). Scan every task for UX or architectural forks; for each fork present 2-3 concrete options via `AskUserQuestion` (ASCII wireframes / flow diagrams), max 3 decision points per feature, log choices in DECISIONS.md. If no forks were found, state explicitly in the run log: "Step 4a: scanned N tasks, no user-facing forks detected."
 
 4b. **Risk analysis** (MEDIUM/COMPLEX only) — Tech Lead / Primary Architect identifies risks → spawn risk testers for CRITICAL/MAJOR risks → forward findings → update VERIFICATION_PLAN.md with mitigations.
 
@@ -225,29 +211,23 @@ Write the table in the language the user is speaking.
 
 Execute in order:
 
-1. **Conventions update** — assign the conventions task to a coder. NOT optional — feature cannot be declared complete without `.conventions/` being created or updated.
+1. **Conventions update** — assign the conventions task to a coder.
 
 2. **Cross-task consistency check** — ask Tech Lead / Primary Architect.
 
 3. **Completion gate** — verify `.conventions/` exists and was modified this session.
 
-4. **Integrated verification** (team still alive):
-   - Parse VERIFICATION_PLAN.md sections
-   - Pre-flight check (curl dev server)
-   - Spawn ci-verifier + browser-verifier + spec-verifier in parallel
-   - Collect results with integrity audit (manifest comparison)
-   - Fix-verify loop: coders fix FAIL items, re-verify (max 3 iterations)
-   - Compile progressive verification report → save to VERIFICATION_REPORT.md
+4. **Integrated verification** (team still alive) — parse VERIFICATION_PLAN.md → pre-flight check → spawn ci-verifier + browser-verifier + spec-verifier in parallel → fix-verify loop (max 3 iterations) → report to VERIFICATION_REPORT.md. See `phase3-verification.md` 5a-5f.
 
-5. **Legacy cleanup** (team still alive) — read `LEGACY_REPORT.md` (coder-reported leftovers from Step 5.5) + run an Explore safety scan on touched files. If items exist, print full list and ask user per-item via `AskUserQuestion`: **Delete / Keep / Later**. "Delete" → cleanup task for coder. "Later" → appended to `.legacy-todo.md` at repo root. HARD STEP — always run the scan even if report is empty.
+5. **Legacy cleanup** (team still alive) — HARD STEP: always run the scan, even if `LEGACY_REPORT.md` is empty; the user decides per item (Delete / Keep / Later). See `phase3-verification.md` Step 6.
 
 6. **Shutdown** — print summary (including legacy cleanup results), shutdown team, TeamDelete, present Human Checks to user.
 
 ## Everything Important Goes to a File
 
-**A result that exists only in a message or in an agent's context is a result you can lose.** Agents
-die, contexts get compacted, and message delivery between teammates can lag by tens of minutes. So:
-**write the file first, then send a short message pointing at it.**
+**Write the file first, then send a short message pointing at it** — a result that exists only in a
+message or an agent's context is a result you can lose. Messages carry the verdict and the path; the
+detail lives in the file.
 
 Per-run artifacts live in `.claude/teams/{team-name}/`:
 
@@ -260,9 +240,6 @@ Per-run artifacts live in `.claude/teams/{team-name}/`:
 
 Rules:
 
-- **File first, message second** — always that order. The file must exist the moment the thinking is
-  done, not after the message is delivered.
-- **Messages carry the verdict and the path**, not the full text. The detail lives in the file.
 - **Reviewers may Write only inside `reports/`.** Their read-only boundary on source code is
   unchanged and absolute.
 - **Never delete these artifacts** — when a finding turns out to be wrong, they are the only way to
@@ -278,9 +255,7 @@ Rules:
 
 ## Reference Files
 
-Detailed protocols for each phase:
-
-- **`references/phase1-planning.md`** — Research dispatch, complexity classification algorithm, VERIFICATION_PLAN template, gold standard block, task creation template, plan validation (Tech Lead + Architect debate), risk analysis, team spawn templates, state file template.
-- **`references/phase2-monitoring.md`** — Event handling table with progress feed column, task-done digest format, noise filter, state file updates, compaction recovery, spawning new coders, stuck protocol.
-- **`references/engines.md`** — Role registry (every spawnable role and which engines it accepts), `~/.claude/agent-teams.json` schema, built-in Codex/Kimi/Grok presets, Step 0b resolution, delegated one-shot mechanic, proxy teammate mechanic, fallback rules.
-- **`references/phase3-verification.md`** — Conventions update, completion gate, integrated verification pipeline (5a-5f), verification report template, legacy cleanup (6a-6e: read LEGACY_REPORT, safety scan, per-item AskUserQuestion, cleanup tasks), summary report, shutdown, human checks.
+- `references/phase1-planning.md`
+- `references/phase2-monitoring.md`
+- `references/engines.md`
+- `references/phase3-verification.md`

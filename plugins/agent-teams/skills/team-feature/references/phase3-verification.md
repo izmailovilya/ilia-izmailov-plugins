@@ -10,27 +10,9 @@ When all coding tasks are completed:
 
 The conventions task (created in Phase 1 Step 3) should now be unblocked. Assign it to a coder.
 
-The coder receives the task description which tells them exactly what to create/update. The coder collects signals from:
+The coder receives the task description which tells them exactly what to create/update (signal sources are listed there). If `.conventions/` didn't exist before, bootstrap it with the key patterns researchers identified.
 
-```
-A. RECURRING REVIEW ISSUES:
-   - Issues reviewers flagged 2+ times across tasks
-   → Add to .conventions/gold-standards/ or .conventions/anti-patterns/
-
-B. APPROVED ESCALATIONS:
-   - Patterns where Tech Lead approved a deviation from existing gold standards
-   → Add new gold standard for the approved pattern
-
-C. NEW PATTERNS INTRODUCED:
-   - Patterns this feature introduced that didn't exist before
-   → Add to .conventions/gold-standards/
-
-D. RESEARCHER FINDINGS (if .conventions/ didn't exist before):
-   - Key patterns researchers identified in the codebase
-   → Bootstrap .conventions/ with discovered patterns
-```
-
-**This step is NOT optional.** The conventions task is tracked in the task list like any other task. It goes through the same review flow (coder implements → reviewers check → Tech Lead approves → commit).
+The conventions task is tracked in the task list like any other task. It goes through the same review flow (coder implements → reviewers check → Tech Lead approves → commit).
 
 After the conventions task is done, report what was created/updated in the summary.
 
@@ -46,7 +28,6 @@ Glob(".conventions/**/*")
 ```
 - If .conventions/ does not exist or was not modified during this session → **STOP. Feature is NOT complete.**
 - Go back to step 1 and run the conventions task. If it was never created → create it now and assign to a coder.
-- Feature cannot be declared COMPLETE without .conventions/ being created or updated.
 
 ## 4. Prepare VERIFICATION_PLAN.md
 
@@ -74,7 +55,6 @@ Read VERIFICATION_PLAN.md and parse sections by `##` headers:
 
 - Only process `- [ ]` items (unchecked). Skip `- [x]` items.
 - Warn on unknown `##` sections — items will be skipped.
-- Record **manifest seed**: item count per section for integrity audit later.
 
 ### 5b. Pre-flight Readiness Check
 
@@ -103,12 +83,12 @@ Report PASS/FAIL/BROKEN per check with evidence.")
 Task(subagent_type="agent-teams:browser-verifier",
   prompt="Verify these browser checks:
 {all items from Browser Checks section}
-Report per check with evidence. SKIP(capability) if Chrome unavailable, BROKEN if server unreachable.")
+Report per check with evidence.")
 
 Task(subagent_type="agent-teams:spec-verifier",
   prompt="Verify these spec checks:
 {all items from Spec Checks section}
-Report per check with evidence. UNCLEAR for ambiguous items, BROKEN for environment issues.")
+Report per check with evidence.")
 ```
 
 **Status taxonomy** (all verifiers use this unified 7-status system):
@@ -126,23 +106,11 @@ Report per check with evidence. UNCLEAR for ambiguous items, BROKEN for environm
 ### 5d. Collect Results + Integrity Audit
 
 - If an agent **times out or crashes** → mark all its items as DEGRADED
-- Route special statuses:
-  - SKIP(capability) → add to Human Checks with skip reason
-  - UNCLEAR → add to Human Checks with verifier's explanation
-  - BROKEN → collect separately (environment issue, not code issue)
+- Route each status per the taxonomy table above (Blocks? column): blocking non-FAIL statuses go to Human Checks with the verifier's reason; BROKEN items are collected separately (environment issue, not code issue).
 
-**Verification Manifest** — compare items sent to agents vs items in their reports:
-```
-VERIFICATION MANIFEST:
-  Items sent to ci-verifier: {N}. Items reported: {M}. Delta: {N-M}
-  Items sent to browser-verifier: {N}. Items reported: {M}. Delta: {N-M}
-  Items sent to spec-verifier: {N}. Items reported: {M}. Delta: {N-M}
+**Verification Manifest**: for each verifier, compare items sent vs items reported. Mark any missing items DEGRADED and note the discrepancy in the report.
 
-  Total: {total} sent, {total} reported. Status: CONSISTENT / ⚠️ INCONSISTENT
-```
-If INCONSISTENT → log warning, mark missing items as DEGRADED.
-
-### 5e. Fix-Verify Loop (team is still alive!)
+### 5e. Fix-Verify Loop
 
 📢 When results are collected (5d), print the outcome in product terms — failures named as user-visible problems, not check IDs:
 
@@ -199,15 +167,10 @@ Action: {what to fix}
 ## Level 3: Integrity & scope
 
 ### Verification Manifest
-{manifest from 5d}
+{per verifier: items sent vs reported, discrepancies}
 
 ### NOT verified (scope disclosure)
-- Cross-task interactions between components
-- Performance under load
-- Accessibility (WCAG compliance)
-- Visual design consistency
-- Mobile/responsive layout
-{add feature-specific uncovered areas}
+- {e.g., cross-task interactions, performance under load, accessibility — add feature-specific uncovered areas}
 
 ## Human Checks
 {items from Human Checks section + SKIP + UNCLEAR + DEGRADED + unresolved FAIL}
@@ -243,13 +206,10 @@ Task(
   prompt="Scan the following files touched during this session for legacy code left behind after refactoring:
 {list of files touched this session}
 
-Check for each category (from CLAUDE.md legacy rules):
-1. Unused imports, variables, functions, or files (grep for references to each exported symbol)
-2. Duplicate implementations side-by-side (old + new version of the same function)
-3. Dead code paths behind feature flags or `if (OLD_BEHAVIOR)` branches
-4. Comments marking deprecation: `// deprecated`, `// TODO remove`, `// old`
-5. Hardcoded fallbacks to old logic
-6. Migration scripts / shims no longer needed
+Check for legacy leftovers (per CLAUDE.md legacy rules): unused imports/variables/functions/files
+(grep for references to each exported symbol), duplicate old+new implementations side-by-side,
+dead code paths behind flags, deprecation comments (`// deprecated`, `// TODO remove`),
+hardcoded fallbacks to old logic, migration scripts/shims no longer needed.
 
 For each finding, output:
 - Where: file:line
@@ -288,26 +248,10 @@ Found {N} legacy item(s) left after implementation:
 ══════════════════════════════════════════════════
 ```
 
-Then ask the user. Use **one AskUserQuestion call with one question per item** (max 5 questions per call — if more items, batch into multiple calls):
-
-```
-AskUserQuestion(
-  questions=[
-    {
-      "question": "Item 1: {short title} at {file}:{line}. What to do?",
-      "header": "Legacy #1",
-      "options": [
-        {"label": "Delete", "description": "Coder removes it now (creates cleanup task, goes through review)"},
-        {"label": "Keep", "description": "Leave as is — it's needed or safer to keep"},
-        {"label": "Later", "description": "Save to .legacy-todo.md at repo root for future cleanup"}
-      ],
-      "multiSelect": false
-    },
-    { ... item 2 ... },
-    ...
-  ]
-)
-```
+Then ask the user with **one AskUserQuestion call, one question per item** (max 5 questions per call — if more items, batch into multiple calls). Question: "{short title} at {file}:{line}. What to do?" with three single-select options:
+- **Delete** — coder removes it now (creates a cleanup task, goes through review)
+- **Keep** — leave as is; it's needed or safer to keep
+- **Later** — save to `.legacy-todo.md` at repo root for future cleanup
 
 ### 6d. Apply user decisions
 
@@ -379,8 +323,6 @@ Definition of Done: {static criteria met / partial}
 Runtime verification: {N/A if no human checks | PENDING — see Human Checks below}
 ══════════════════════════════════════════════════
 ```
-
-**Do NOT stop here.** Always proceed to Step 8 (shutdown) and Step 9 (Human Checks) — the user needs the full checklist in the same turn, not after prompting.
 
 ## 8. Shutdown Team
 
@@ -470,8 +412,4 @@ AskUserQuestion(
 
 ### When no human checks are needed
 
-If ALL checks passed and there are zero human-check items — skip Step 9 entirely and print:
-
-```
-ALL CHECKS PASSED — feature fully verified, no manual checks needed.
-```
+If ALL checks passed and there are zero human-check items — skip Step 9 entirely and print: `ALL CHECKS PASSED — feature fully verified, no manual checks needed.`

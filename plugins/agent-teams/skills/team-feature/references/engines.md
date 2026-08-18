@@ -1,17 +1,12 @@
 # Engines — Pluggable Backends per Role
 
 Every role in the pipeline is backed by an **engine**. The default engine for every role is
-`claude` (a normal Claude Code subagent / teammate). A user MAY reassign individual roles to an
-external CLI agent (Codex, Kimi, Grok) in their config file.
+`claude` (a normal Claude Code subagent / teammate) — **with no config file everything runs on
+Claude, exactly as before**. This file only matters when `~/.claude/agent-teams.json` exists and
+assigns a role to an external CLI agent (Codex, Kimi, Grok).
 
-**Default behavior with no config file: everything runs on Claude, exactly as before.** This file
-only matters when `~/.claude/agent-teams.json` exists and assigns a non-claude engine.
-
-## Why offload at all
-
-External CLIs bill against a different subscription (ChatGPT / Moonshot / xAI), so work moved there
-does not consume Claude context or rate limit. Codex in particular over-reports issues — valuable
-for review and risk work, provided every finding is triaged before it reaches a coder.
+**Why offload:** external CLIs bill against a different subscription (ChatGPT / Moonshot / xAI),
+so work moved there consumes neither Claude context nor rate limit.
 
 ---
 
@@ -80,10 +75,8 @@ Any role not listed = `claude`.
   "roles": {
     "security-reviewer": "codex",
     "risk-tester": { "engine": "codex", "effort": "xhigh" },
-    "architect": "claude",
     "architect-backend": "codex",
-    "web-researcher": "grok",
-    "coder": "claude"
+    "web-researcher": "grok"
   },
   "engines": {
     "codex": { "model": "gpt-5.6-sol", "effort": "xhigh" }
@@ -157,20 +150,12 @@ session: NOT printed by Grok — you mint it yourself. MUST be a real UUID (`uui
 `--always-approve` is MANDATORY — without it Grok silently exits in batch mode waiting for tool
 approval.
 
-**Grok sessions must be given an explicit `--session-id`, and it must be a real UUID.** Unlike
-Codex and Kimi, Grok prints no session id in `-p` mode, and a bare `grok -r` resumes *the most
-recent session in the current directory* — so two Grok-backed roles running in the same project
-would silently share one conversation.
-
-Mint one id per role before the first call and reuse it on every resume:
-
-```bash
-uuidgen   # e.g. 7C9E4A2B-1F03-4D8A-9B21-6E5F0C3D8A47
-```
-
-**A readable name like `grok-myteam-coder` is rejected — Grok fails to start.** (Observed in a live
-run on 2026-08-17.) Save the generated UUID to the role's `session.txt` immediately; regenerating it
-later loses the conversation.
+**Sessions:** Grok prints no session id in `-p` mode, and a bare `grok -r` resumes *the most recent
+session in the current directory* — two Grok-backed roles in the same project would silently share
+one conversation. So mint one id per role (`uuidgen`) before the first call, reuse it on every
+resume, and save it to the role's `session.txt` immediately — regenerating it later loses the
+conversation. It MUST be a real UUID: a readable name like `grok-myteam-coder` is rejected — Grok
+fails to start (observed in a live run on 2026-08-17).
 
 ---
 
@@ -227,6 +212,8 @@ Replaces a `Task()` spawn for one-shot roles. The spawner (usually Lead) does th
 - Не изменяй файлы. {для risk-tester: временные скрипты складывай только в .claude/teams/<team>/tmp/}
 - Отвечай строго в формате, заданном выше. Без вступлений, без "надеюсь, это поможет".
 - Каждое утверждение подкрепляй ссылкой файл:строка. Без ссылки — помечай как предположение.
+- Прежде чем сообщить о проблеме, проверь, нет ли уже защиты (middleware, обёртка, валидация
+  фреймворка) — теоретические проблемы без конкретного кода не сообщай.
 - Не хватает контекста — не выдумывай, заверши ответ строкой `ВОПРОС ОРКЕСТРАТОРУ: <вопрос>`.
 ```
 
@@ -258,12 +245,9 @@ The proxy's contract is defined in `agents/proxy-teammate.md`. Two rules matter 
 
 ### When the proxy cannot start
 
-If the first CLI call fails (missing binary, auth error, empty output), the proxy reports
-`ENGINE_DOWN: <role>. <reason>` to Lead and shuts down. Lead applies `fallback`: spawns the normal
-Claude teammate under the same name, sends a `ROSTER UPDATE` to affected coders, and prints
-`⚙️ {engine} недоступен — {role} работает на Claude.`
-
----
+If the proxy reports `ENGINE_DOWN: <role>. <reason>` to Lead and shuts down, Lead applies
+`fallback`: spawns the normal Claude teammate under the same name, sends a `ROSTER UPDATE` to
+affected coders, and prints `⚙️ {engine} недоступен — {role} работает на Claude.`
 
 ---
 
@@ -306,28 +290,16 @@ are absent:
 
 **Same rule applies to Mechanic A.** A one-shot external role gets the same prompt text the Claude
 one-shot agent would have received (the prompt printed in the phase document), plus the Output
-Contract. Do not shorten it because "the engine is smart enough".
+Contract.
 
 ### Which roles transfer well
 
-Not every role survives the move equally. Prefer to offload roles whose job is *read → produce a
-list*, and keep protocol-heavy roles on Claude:
-
-| Transfers well | Why |
-|----------------|-----|
-| `security-reviewer`, `logic-reviewer`, `unified-reviewer` | Self-contained: read code, output findings with citations. The proxy's triage catches over-reporting. |
-| `risk-tester` | Self-contained: write a script, run it, report numbers. Evidence is checkable. |
-| `codebase-researcher`, `reference-researcher`, `web-researcher` | Pure read-and-summarize, no team interaction at all. |
-| `ci-verifier`, `spec-verifier`, `legacy-scanner` | Mechanical checks with quotable output. |
-
-| Transfers poorly | Why |
-|------------------|-----|
-| `tech-lead`, `architect` | Their value is judgment, cross-task memory, and multi-party debate — the parts hardest to carry across a CLI boundary, and the parts whose output nobody downstream re-verifies. |
-| `quality-reviewer` | Judges against project conventions and gold standards; Claude reads `.conventions/` natively and already holds them. |
-| `coder` | Writes to the shared working tree; every safeguard has to be reconstructed by the proxy after the fact. Experimental for a reason. |
-
-This is guidance, not enforcement — the config allows any assignment in the registry. But when a run
-produces confusing results, this table is the first thing to check.
+Prefer to offload *read → produce a list* roles — reviewers, researchers, verifiers, `risk-tester`:
+self-contained work with citable, checkable output. Keep `tech-lead`, `architect`,
+`quality-reviewer` and `coder` on Claude — their value is judgment, cross-task memory,
+project-convention knowledge, and team protocol, the parts that do not survive a CLI boundary.
+This is guidance, not enforcement — the config allows any assignment in the registry — but when a
+run produces confusing results, check the assignment against this list first.
 
 ---
 
@@ -382,9 +354,6 @@ are mechanism, not backup. The ledger is what makes the engine's own recording f
 
 ## Rules
 
-- **Default is Claude.** Never assume a config exists. Never require one.
-- **Never summarize a role brief or a prompt for an external engine.** Same text, minus the
-  Claude-Code-only mechanics listed above.
 - **Never route a decision to an external engine.** Engines produce findings, reports, and drafts.
   Approving a deviation, resolving a review loop, choosing between design options, and deleting
   legacy stay with Claude roles (`lead`, and whichever of `tech-lead` / `architect` is on Claude).
@@ -392,12 +361,6 @@ are mechanism, not backup. The ledger is what makes the engine's own recording f
   responsible for sanity-checking them against DECISIONS.md before writing.
 - **Never assign a write-capable role to an engine without a write sandbox** (`kimi`). Warn and
   fall back.
-- **One external session per role, not per message.** Starting fresh each time loses review memory
-  and costs more.
 - **Everything an external engine says is unverified until checked.** This applies to reports too,
   not just review findings — a risk-tester report claiming "the API caps at 3 QPS" must cite the
   script and its output.
-- **Timeouts:** external calls take 2–10 minutes. Use `run_in_background: true` for parallel
-  one-shots, `timeout: 600000` for foreground calls. Do not poll in a tight loop.
-- **Artifacts:** prompts and raw outputs live in `.claude/teams/{team-name}/engine/`. Keep them —
-  they are the audit trail when an external finding turns out to be wrong.

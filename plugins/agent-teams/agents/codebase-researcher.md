@@ -92,8 +92,6 @@ Skip sections that don't apply.
 ## Similar Features
 - Profile: src/app/profile/page.tsx + src/server/routers/profile.ts
   Pattern: server component → tRPC query → client form component
-- Settings: src/app/settings/page.tsx + src/server/routers/settings.ts
-  Pattern: same as profile
 
 ## Conventions
 - Files: kebab-case for files, PascalCase for components
@@ -101,15 +99,12 @@ Skip sections that don't apply.
 - API: tRPC routers, one per resource, camelCase procedure names
 
 ## Design System
-- shadcn/ui components in src/components/ui/
-- Forms use react-hook-form + zod
+- shadcn/ui in src/components/ui/; forms use react-hook-form + zod
 ```
 
 <output_rules>
 - Be FAST — skim, don't read deeply. Your job is mapping, not investigating.
-- Return CONDENSED summaries — 3-10 lines per section
 - Include specific file paths and command names
 - Skip sections that don't apply to this project
-- Do NOT return raw file contents — that's reference-researcher's job
 - Total output should be under 50 lines
 </output_rules>

@@ -101,28 +101,15 @@ Project context: {stack and structure from brief}"
 
 Skip directly to Step 3. Use context from brief + .conventions/ for planning.
 
-**Optionally spawn a web researcher** if the feature requires external knowledge:
+**Optionally spawn a web researcher** if the feature involves a library/pattern you're unsure about (OAuth, real-time, file uploads, etc.):
 
 ```
-If the feature involves a library/pattern you're unsure about (OAuth, real-time, file uploads, etc.):
-
 Task(
   subagent_type="general-purpose",
-  prompt="Research best practices for implementing '{specific topic}' in a {framework} project.
-
-  Use WebSearch and/or Context7 to find:
-  1. Current recommended approach (2024-2025 best practices)
-  2. Key libraries or built-in features to use
-  3. Common pitfalls to avoid
-  4. A brief example of the pattern
-
-  Context: The project uses {stack from brief or codebase researcher}.
-
-  Return a CONDENSED recommendation (10-20 lines max):
-  - Recommended approach + why
-  - Key library/API to use
-  - 2-3 pitfalls to watch for
-  - Pattern example (pseudocode, not full implementation)"
+  prompt="Research current best practices for implementing '{specific topic}' in a {framework} project.
+  Context: the project uses {stack from brief or codebase researcher}.
+  Use WebSearch and/or Context7. Return a CONDENSED recommendation (10-20 lines max):
+  recommended approach + why, key library/API, 2-3 pitfalls to watch for, pattern example (pseudocode)."
 )
 ```
 
@@ -134,12 +121,8 @@ Whatever a researcher, risk tester or verifier returns — Claude subagent or ex
 **write it to `.claude/teams/{team-name}/reports/` before you act on it**:
 `research-{role}.md`, `risk-{n}.md`, `verify-{role}.md`.
 
-A subagent's return value exists only inside your context. After a compaction it is gone, and with
-it the evidence behind every plan decision you made. External engines already leave this trail in
-`engine/` — Claude roles must leave the same one, or half the run is unauditable.
-
-This is also the cheaper path: once the report is on disk you can keep a short digest in context and
-re-read the file only when a specific detail is needed.
+A subagent's return value survives only until the next compaction — on disk it stays auditable
+(external engines already leave this trail in `engine/`), and you keep just a short digest in context.
 
 ### 📢 Research feed
 
@@ -281,13 +264,7 @@ Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
 
 How to populate: Definition of Done from technical quality bar + CLAUDE.md, Business Criteria from brief's Success Criteria, Build/Tests from researcher findings, Browser Checks from UI criteria, Spec Checks from acceptance criteria, Human Checks for anything requiring judgment. Risk Mitigation Checks are added after Step 4b.
 
-**Human Checks quality bar — no vague items allowed.** If tasks touch deploy config, infrastructure, billing, background jobs (pg-boss, queues), database migrations, auth middleware, or anything that only shows up at runtime, every Human Check must be a *concrete* item with:
-- Exact command or action (e.g., `/deploy-dev`, not "deploy it")
-- Specific signal to look for (e.g., "log line `PgBoss: Worker instance started` appears", not "check logs")
-- Time window (e.g., "watch for 10 minutes", not "monitor briefly")
-- Failure pattern to reject (e.g., "no `ECONNREFUSED to db-02` in last 10 min")
-
-Vague placeholders like "deploy and verify it works" are banned — they force the user to ask "what exactly should I check?" during Phase 3.
+**Human Checks quality bar — no vague items allowed.** If tasks touch deploy config, infrastructure, billing, background jobs (pg-boss, queues), database migrations, auth middleware, or anything that only shows up at runtime, every Human Check must follow the template above, plus a failure pattern to reject (e.g., "no `ECONNREFUSED to db-02` in last 10 min"). Vague placeholders like "deploy and verify it works" are banned.
 
 **For COMPLEX** — skip writing VERIFICATION_PLAN.md here. Architects populate it during the debate phase (Step 4c) — each adds checks from their domain expertise.
 
@@ -312,8 +289,6 @@ GOLD STANDARD BLOCK (compiled by Lead):
 ```
 
 Keep this block to 3-5 examples, ~100-150 lines total. Prioritize by relevance to the feature.
-
-See `references/gold-standard-template.md` for the full template and rules (if it exists).
 
 ### Task Creation Template
 
@@ -354,7 +329,7 @@ TaskCreate(
 - **Convention checks** — specific pass/fail rules for THIS task (naming, structure, imports)
 - Tooling commands (from researcher findings)
 
-**Always create a conventions task as the SECOND TO LAST task** (blocked by all other coding tasks):
+**Always create a conventions task as the LAST task** (blocked by all other coding tasks):
 
 ```
 TaskCreate(
@@ -456,20 +431,7 @@ YOUR TEAM:
 - architect-backend (API/DB/security)
 - architect-systems (testing/CI/DX)
 
-INSTRUCTIONS:
-1. Read all tasks (TaskList + TaskGet)
-2. Read CLAUDE.md and .conventions/ for project context
-3. Post your CRITIQUE to the other two architects via SendMessage — ground it in the codebase context and reference code above
-4. Respond to their critiques — debate directly with each other
-4b. After EACH round of critique you post, also send me (Lead) a compact round summary — 2-3 lines max:
-   ROUND {N} SUMMARY from {persona}: [your current position + the main point of disagreement, if any]
-   This is for user visibility — do NOT wait for my reply, keep debating.
-5. Add VERIFICATION CHECKS from your domain — what should be verified after implementation:
-   - Frontend: browser checks (pages load, elements visible, interactions work)
-   - Backend: spec checks (files exist, exports correct, API returns expected status)
-   - Systems: CI checks (build passes, types clean, tests pass, conventions met)
-6. Max 3 rounds of exchange
-7. When you agree, send me: SPEC APPROVED + final recommendations + your verification checks"
+Debate protocol, round summaries to Lead, domain verification checks, and convergence (SPEC APPROVED) — follow your agent file."
 ```
 
 ### Step 4c-3: Monitor debate and handle convergence:
@@ -498,48 +460,7 @@ Wait for all 3 architects to send "SPEC APPROVED" to Lead. If they converge:
   - Feature is mostly UI → architect-frontend is Primary
   - Feature is mostly API/DB → architect-backend is Primary
   - Feature is cross-cutting/infra → architect-systems is Primary
-- **Compile VERIFICATION_PLAN.md** from all architects' verification checks + brief + DoD:
-
-```
-Lead collects verification checks from all 3 architects and writes:
-
-Write(".claude/teams/{team-name}/VERIFICATION_PLAN.md"):
-
-# Verification Plan
-## Feature: {feature name}
-
-## Definition of Done
-- Build passes, all tests pass
-- Automated convention checks pass
-- No unresolved CRITICAL review findings
-- CLAUDE.md conventions followed
-- Gold standard patterns matched (or deviation explicitly justified)
-
-## Business Criteria
-{From brief's Success Criteria — restate each as a verifiable check}
-- [ ] {User can do X}
-- [ ] {Y is visible on screen}
-- [ ] Exclusions respected: {from brief's Exclusions}
-
-## Risk Mitigation Checks
-{Added after Step 4b risk analysis}
-
-## Build & Types
-{checks from architect-systems: build commands, typecheck}
-
-## Tests
-{checks from architect-systems: test commands, specific test files}
-
-## Browser Checks
-{checks from architect-frontend: pages, elements, interactions}
-
-## Spec Checks
-{checks from architect-backend: file existence, exports, API contracts}
-{checks from architect-systems: config values, convention compliance}
-
-## Human Checks
-{anything architects flagged as not automatable}
-```
+- **Compile VERIFICATION_PLAN.md** from all architects' verification checks + brief + DoD. Same template as Step 3. Populate: Build & Types / Tests ← architect-systems; Browser Checks ← architect-frontend; Spec Checks ← architect-backend (plus architect-systems config/convention checks); Human Checks ← anything architects flagged as not automatable.
 
 ```
 SendMessage to {primary architect}:
@@ -556,7 +477,7 @@ Include the debate summary in DECISIONS.md."
 
 ### Step 4c-4: MANDATORY Plan Brief to User (HARD GATE — COMPLEX)
 
-**This is not optional.** After architects converge (or Lead breaks a deadlock), the user has been silent since the interview/brief. They have NO idea what the architects debated, what was decided, what tradeoffs were made, or what the team is about to build. Before moving to risk analysis or Step 4a, Lead MUST present a short human-readable brief to the user in chat.
+**This is not optional.** Before moving on, Lead MUST present a short human-readable brief in chat — the user has been silent since the interview and has no idea what was debated or decided.
 
 Print to chat (not inside AskUserQuestion):
 
@@ -640,40 +561,7 @@ AskUserQuestion(
 )
 ```
 
-**For architectural decisions — flow diagrams:**
-
-If the schema is too complex for AskUserQuestion description fields (more than 5-6 lines), draw it in the chat first, then ask:
-
-```
-Present in chat:
-
-## Option A: Polling
-  Client ──GET /status──▶ Server ──▶ DB
-  Client ◀──200 JSON────── Server
-  (repeat every 5s)
-
-## Option B: WebSocket
-  Client ◀═══ws═══▶ Server ──▶ DB
-  (real-time push, persistent connection)
-
-## Option C: SSE
-  Client ◀──stream──── Server ──▶ DB
-  (server pushes, client listens, HTTP-based)
-
-Then:
-AskUserQuestion(
-  questions=[{
-    "question": "Which approach fits better for real-time updates?",
-    "header": "Architecture",
-    "options": [
-      {"label": "Polling", "description": "Simplest. Works everywhere. 5s delay."},
-      {"label": "WebSocket", "description": "Instant. But needs infrastructure (connection management, reconnect)."},
-      {"label": "SSE", "description": "Middle ground. Real-time over HTTP. Already used in chat streaming."}
-    ],
-    "multiSelect": false
-  }]
-)
-```
+**For architectural decisions** — same pattern with flow diagrams. If the schema is too long for the AskUserQuestion description fields (more than 5-6 lines), draw it in chat first, then ask with short labels.
 
 ### Rules
 
@@ -684,19 +572,6 @@ AskUserQuestion(
 - **After user picks:** Update the relevant task descriptions with the chosen approach (TaskUpdate). Add the decision to DECISIONS.md if it exists.
 - **Wireframes should be rough and fast** — box-drawing characters, simple text layout. Not art. Enough to see the structure.
 
-### Example wireframe vocabulary
-
-```
-Page layouts:           Flow diagrams:          Data relationships:
-┌───────────────┐       A ──▶ B ──▶ C          User ──1:N──▶ Project
-│  Header       │       A ──▶ B                 Project ──1:N──▶ Entity
-├───────────────┤            └──▶ C             Entity ──M:N──▶ Tag
-│ Sidebar │ Main│       
-│         │     │       States:
-│         │     │       [Draft] ──▶ [Active] ──▶ [Archived]
-└───────────────┘              └──▶ [Deleted]
-```
-
 ## Step 4b: Risk Analysis (MEDIUM and COMPLEX only)
 
 After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run a pre-implementation risk analysis.
@@ -706,29 +581,10 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
 1. **Tech Lead / Primary Architect identifies risks:**
    ```
    SendMessage to {tech-lead (MEDIUM) / primary architect (COMPLEX)}:
-   "IDENTIFY RISKS: Review the validated task list and identify what could go wrong during implementation.
-
-   For each risk:
-   - What could break or go wrong?
-   - Which tasks are affected?
-   - Severity: CRITICAL (data loss, security hole, breaks production) / MAJOR (logic bugs, integration failures) / MINOR (edge cases, suboptimal patterns)
-   - What should a risk tester investigate in the codebase to verify this risk?
-
-   Format:
-   RISK-1: [description]
-     Severity: CRITICAL
-     Affected tasks: #1, #3
-     Verify: [specific things to check — files to read, code paths to trace, constraints to validate]
-
-   RISK-2: [description]
-     Severity: MAJOR
-     Affected tasks: #2
-     Verify: [what to check]
-
+   "IDENTIFY RISKS: Review the validated task list — what could go wrong during implementation?
    Focus on: data integrity, auth/security implications, breaking changes to existing features,
-   integration points between tasks, missing edge cases, performance implications, external API contracts.
-
-   Return at least 3 risks, prioritized by severity."
+   integration points between tasks, missing edge cases, performance, external API contracts.
+   For each risk, say what a risk tester should investigate in the codebase to verify it."
    ```
 
 1b. 📢 **Print the risk list** when it arrives — severity in human terms, before spawning testers:
@@ -759,8 +615,6 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    Spawn risk testers for all CRITICAL risks and up to 3 MAJOR risks. Skip MINOR risks.
    Launch them **in parallel** — each investigates independently.
 
-   **Reference for risk testers:** If needed, Lead reads `references/risk-testing-example.md` for the detailed case study pattern. Only load this reference when spawning risk testers — not at initialization.
-
    **If `risk-tester` is on an external engine** (Step 0b table): no `Task()` — write this exact prompt to `.claude/teams/{team}/engine/risk-tester-{n}.prompt.md`, append the Output Contract from `engines.md`, and run the CLI with the **write** sandbox in background (risk testers create throwaway scripts — tell the engine to keep them in `.claude/teams/{team}/tmp/`). Read the report as you would the agent's return value. A report without the script and its actual output is not a verdict — resume the session and ask for the evidence.
 
 2b. 📢 **Print each verdict** as risk tester results come back — what was found and what it changes:
@@ -774,15 +628,8 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
    ```
    SendMessage to {tech-lead (MEDIUM) / primary architect (COMPLEX)}:
    "RISK ANALYSIS RESULTS:
-
    {paste all risk tester findings}
-
-   Based on these findings:
-   1. Update DECISIONS.md with confirmed risks and their mitigations
-   2. For CONFIRMED risks: add mitigation criteria to affected task descriptions (use TaskUpdate to append to description)
-   3. If any risk requires task reordering or new tasks — recommend changes
-
-   Reply with summary of changes made."
+   Update the plan per your protocol. Reply with summary of changes made."
    ```
 
 4. **Lead applies recommendations:**
@@ -796,15 +643,6 @@ After plan validation (Tech Lead for MEDIUM, Architect debate for COMPLEX), run 
      - [ ] RISK-1 ({severity}): {what to verify — from risk tester findings}
      - [ ] RISK-2 ({severity}): {what to verify}
      ```
-
-**What risk analysis catches that review doesn't:**
-
-| Risk Analysis (BEFORE code) | Review (AFTER code) |
-|------------------------------|---------------------|
-| "This endpoint will break the mobile app" | "This endpoint has a typo in the response" |
-| "The migration will delete user data" | "The migration has a syntax error" |
-| "Auth middleware won't cover the new routes" | "Auth check is missing on line 42" |
-| "Two tasks will create conflicting DB columns" | "This column name doesn't match convention" |
 
 ## Step 5: Spawn Team and Write State File
 
@@ -841,61 +679,35 @@ When reviewing, verify code matches the gold standard patterns and meets the Def
 If code touches auth/payments/migrations, send ESCALATE TO MEDIUM to Lead.")
 ```
 
-**For MEDIUM** — spawn all 3 reviewers in parallel. Include feature context, DoD, gold standards, and confirmed risks:
+**For MEDIUM** — spawn all 3 reviewers in parallel from one template, {role} = security-reviewer / logic-reviewer / quality-reviewer:
 ```
-Task(subagent_type="agent-teams:security-reviewer", team_name="feature-<short-name>", name="security-reviewer",
-  prompt="You are the security reviewer for team feature-<short-name>.
+Task(subagent_type="agent-teams:{role}", team_name="feature-<short-name>", name="{role}",
+  prompt="You are the {security | logic | quality} reviewer for team feature-<short-name>.
 
 FEATURE CONTEXT:
 Feature: {feature description — what we're building and why}
 Definition of Done: {DoD from Step 3}
 Gold standard references: {list reference files from researcher findings or .conventions/}
-Confirmed risks from risk analysis: {list CONFIRMED risks from Step 4b, especially security-related}
+Confirmed risks from risk analysis: {CONFIRMED risks from Step 4b relevant to this reviewer's domain}
 
 Wait for REVIEW requests from coders via SendMessage.
 Pay special attention to the confirmed risks above — verify that code properly addresses their mitigations.")
-
-Task(subagent_type="agent-teams:logic-reviewer", team_name="feature-<short-name>", name="logic-reviewer",
-  prompt="You are the logic reviewer for team feature-<short-name>.
-
-FEATURE CONTEXT:
-Feature: {feature description — what we're building and why}
-Definition of Done: {DoD from Step 3}
-Gold standard references: {list reference files from researcher findings or .conventions/}
-Confirmed risks from risk analysis: {list CONFIRMED risks from Step 4b, especially logic/race-condition risks}
-
-Wait for REVIEW requests from coders via SendMessage.
-Pay special attention to the confirmed risks above — verify that code properly addresses their mitigations.")
-
-Task(subagent_type="agent-teams:quality-reviewer", team_name="feature-<short-name>", name="quality-reviewer",
-  prompt="You are the quality reviewer for team feature-<short-name>.
-
-FEATURE CONTEXT:
-Feature: {feature description — what we're building and why}
-Definition of Done: {DoD from Step 3}
-Gold standard references: {list reference files from researcher findings or .conventions/}
-
-Wait for REVIEW requests from coders via SendMessage.
-Verify code matches the gold standard patterns and project conventions.")
 ```
+
+For quality-reviewer, omit the confirmed-risks line and the last sentence — instead: "Verify code matches the gold standard patterns and project conventions."
 
 **For COMPLEX** — switch architects to review mode (already spawned from Step 4c):
 ```
 SendMessage to architect-frontend, architect-backend, architect-systems:
 "SWITCH TO REVIEW MODE. The debate phase is complete.
 
-You are now reviewing code from coders in your domain:
-- architect-frontend: UI, components, accessibility, client-side security
-- architect-backend: API, DB, data integrity, race conditions, server-side security
-- architect-systems: tests, conventions, naming, code quality, DX
+You now review code from coders — each from your persona's domain.
 
 CONFIRMED RISKS FROM RISK ANALYSIS:
 {List confirmed risks from Step 4b — verify that code properly addresses their mitigations during review}
 
 Wait for REVIEW requests from coders via SendMessage."
 ```
-
-No separate security/logic/quality reviewers for COMPLEX — architects cover all review areas through their domain expertise.
 
 ### 2. Coders (up to --coders in parallel, uses `agents/coder.md`)
 
@@ -920,9 +732,8 @@ your commit by building the file's content from its committed version plus your 
 their edits stay out of your commit. Report it in your DONE digest.
 ```
 
-Tell each coder their team roster so they can communicate directly:
+Tell each coder their team roster so they can communicate directly. One prompt template for all complexities — only the YOUR TEAM ROSTER block varies:
 
-**For SIMPLE/MEDIUM:**
 ```
 Task(
   subagent_type="agent-teams:coder",
@@ -934,9 +745,7 @@ FEATURE GOAL: {1-2 sentences — what we're building and why, so you understand 
 DEFINITION OF DONE: {DoD from Step 3}
 
 YOUR TEAM ROSTER (communicate directly via SendMessage):
-- Reviewers: {unified-reviewer (SIMPLE) / security-reviewer, logic-reviewer, quality-reviewer (MEDIUM)}
-- Tech Lead: tech-lead
-- Lead: for DONE/STUCK signals only
+{roster block by complexity — see below}
 
 IMPORTANT: If DECISIONS.md exists at .claude/teams/{team-name}/DECISIONS.md — read it before starting. It contains architectural decisions, confirmed risks, and their mitigations that affect your implementation.
 
@@ -951,41 +760,27 @@ Claim your first task from the task list and start working."
 )
 ```
 
-For SIMPLE tasks, tell coders: `Reviewers: unified-reviewer` (no separate reviewers, no tech-lead in roster).
+**Roster block by complexity:**
 
-**For COMPLEX:**
-```
-Task(
-  subagent_type="agent-teams:coder",
-  team_name="feature-<short-name>",
-  name="coder-<N>",
-  prompt="You are Coder #{N}. Team: feature-<short-name>.
-
-FEATURE GOAL: {1-2 sentences — what we're building and why, so you understand the big picture}
-DEFINITION OF DONE: {DoD from Step 3}
-
-YOUR TEAM ROSTER (communicate directly via SendMessage):
-- Reviewers (specialized architects):
-  - architect-frontend: UI, components, accessibility, client-side security
-  - architect-backend: API, DB, data integrity, race conditions, server-side security
-  - architect-systems: tests, conventions, naming, code quality
-- Primary Architect: {primary architect name} (escalations, architectural decisions)
-- Lead: for DONE/STUCK signals only
-
-Send REVIEW requests to ALL 3 architects — each reviews from their domain.
-
-IMPORTANT: Read DECISIONS.md at .claude/teams/{team-name}/DECISIONS.md before starting — it contains the architect debate summary, confirmed risks, and mitigations that affect your implementation.
-
-YOUR TASK CONTEXT:
-{Brief summary of what this coder will work on — from task descriptions}
-
---- GOLD STANDARD EXAMPLES ---
-{GOLD STANDARD BLOCK compiled by Lead in Step 3}
---- END GOLD STANDARDS ---
-
-Claim your first task from the task list and start working."
-)
-```
+- **SIMPLE:**
+  ```
+  - Reviewers: unified-reviewer
+  - Lead: for DONE/STUCK signals only
+  ```
+- **MEDIUM:**
+  ```
+  - Reviewers: security-reviewer, logic-reviewer, quality-reviewer
+  - Tech Lead: tech-lead
+  - Lead: for DONE/STUCK signals only
+  ```
+- **COMPLEX:**
+  ```
+  - Reviewers: architect-frontend, architect-backend, architect-systems
+    (send REVIEW requests to ALL 3 — each reviews from their persona's domain)
+  - Primary Architect: {primary architect name} (escalations, architectural decisions)
+  - Lead: for DONE/STUCK signals only
+  ```
+  For COMPLEX, also make the DECISIONS.md line unconditional: "Read DECISIONS.md at .claude/teams/{team-name}/DECISIONS.md before starting — it contains the architect debate summary, confirmed risks, and mitigations that affect your implementation."
 
 ### 3. Initialize Legacy Report
 
@@ -997,15 +792,6 @@ Write(".claude/teams/{team-name}/LEGACY_REPORT.md"):
 # Legacy Report — feature-{name}
 
 Coders append entries here when their task replaces, rewrites, or supersedes existing behavior and leaves old code behind. Lead reads this in Phase 3 and asks the user what to do with each item.
-
-**Entry format (appended by coders):**
-
-## [task #N] {short title}
-- **Where:** `{file}:{line}`
-- **What:** {one sentence}
-- **Why left:** {reason for not deleting}
-- **Still used?** yes / no / unclear — {grep evidence}
-- **Suggested action:** delete / keep / investigate
 
 ---
 (no entries yet)
@@ -1035,41 +821,13 @@ Your role: listen for DONE/STUCK/ESCALATE from team members.
 - When ALL coding tasks show COMPLETED → change Phase to VERIFICATION and follow Phase 3 instructions below
 
 ## Phase 3 Instructions (VERIFICATION) — follow step by step when Phase changes
-When you change Phase to VERIFICATION, execute these steps IN ORDER:
-
-### Step 1: Conventions task
-- Check TaskList for the conventions task — assign to a coder if not yet assigned
-- Wait for it to complete
-
-### Step 2: Final checks
-- Ask Tech Lead / Primary Architect for cross-task consistency check
-- Verify .conventions/ exists: Glob(".conventions/**/*")
-
-### Step 3: Prepare verification plan
-- Read .claude/teams/{team-name}/VERIFICATION_PLAN.md
-- Update with actual file paths and endpoints from completed tasks
-
-### Step 4: Integrated verification (team is still alive!)
-- Parse VERIFICATION_PLAN.md sections, pre-flight check (curl dev server)
-- Spawn ci-verifier + browser-verifier + spec-verifier in parallel via Task()
-- Collect results + integrity audit
-- If FAIL items → create fix tasks for coders → re-verify (max 3 iterations)
-- Compile progressive verification report
-- Save to .claude/teams/{team-name}/VERIFICATION_REPORT.md
-
-### Step 5: Legacy Cleanup (team is still alive!)
-- Read .claude/teams/{team-name}/LEGACY_REPORT.md
-- Spawn a quick scan (Explore subagent) on files touched in this session to catch unreferenced exports coders missed; append findings to LEGACY_REPORT.md
-- If any legacy items exist → print full list to chat, then AskUserQuestion with Delete / Keep / Later per item (batch up to 5 per call)
-- For "Delete" items → create cleanup tasks (TaskCreate), coders fix, reviewers approve, commit
-- For "Later" items → append to `.legacy-todo.md` at repo root with context
-- See references/phase3-verification.md Step 6 for full details
-
-### Step 6: Summary & Shutdown
-- Print summary report with verification + legacy cleanup results
-- SendMessage(type="shutdown_request") to all permanent teammates
-- TeamDelete
-- Present Human Checks to user via AskUserQuestion (items that couldn't be auto-verified)
+When you change Phase to VERIFICATION, execute IN ORDER (full details: references/phase3-verification.md):
+1. Conventions task — assign to a coder if unassigned, wait for completion
+2. Final checks — cross-task consistency via Tech Lead / Primary Architect; verify .conventions/ exists
+3. Prepare verification plan — read VERIFICATION_PLAN.md, update with actual paths/endpoints
+4. Integrated verification — spawn ci-verifier + browser-verifier + spec-verifier in parallel, fix-verify loop for FAIL items (max 3 iterations), save VERIFICATION_REPORT.md
+5. Legacy cleanup — read LEGACY_REPORT.md + Explore scan, AskUserQuestion Delete/Keep/Later per item, cleanup tasks or .legacy-todo.md
+6. Summary & shutdown — final report, shutdown_request to all teammates, TeamDelete, present Human Checks via AskUserQuestion
 
 ## Engines
 {Omit this whole section if no config file exists — the default is Claude everywhere.}

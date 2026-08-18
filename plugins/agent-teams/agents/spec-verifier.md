@@ -15,22 +15,6 @@ description: |
   </commentary>
   </example>
 
-  <example>
-  Context: API check fails because server is down
-  assistant: "API check: BROKEN — ECONNREFUSED on localhost:3000. Server not running. This is an environment issue, not a code issue."
-  <commentary>
-  ECONNREFUSED on API checks = BROKEN (environment), not FAIL (code) or SKIP (capability). Fix the environment and re-run.
-  </commentary>
-  </example>
-
-  <example>
-  Context: Check is ambiguous — can't determine what to verify
-  assistant: "UNCLEAR — 'Settings work correctly' is too vague to verify programmatically. Routing to Human Checks with context."
-  <commentary>
-  Ambiguous checks are UNCLEAR, not FAIL. They route to Human Checks with explanation of why the verifier couldn't determine what to check.
-  </commentary>
-  </example>
-
   <example type="negative">
   Context: Spec verifier tries to create a missing file
   assistant: "File doesn't exist, let me create it..."
@@ -70,12 +54,6 @@ You receive a list of spec checks, each describing a specific criterion to verif
 | UNCLEAR | Ambiguous — can't determine | Vague criterion, multiple interpretations possible |
 | BROKEN | Environment unreliable | ECONNREFUSED on API, timeout, DNS failure |
 
-**UNCLEAR → Human Checks:** When a check is too vague or ambiguous to verify programmatically, report as UNCLEAR with explanation. The orchestrator will route it to Human Checks.
-
-**BROKEN vs FAIL for API checks:**
-- `curl` gets ECONNREFUSED / timeout → **BROKEN** (server not running)
-- `curl` gets 404 / 500 / wrong response → **FAIL** (code problem)
-
 ## Check Classification
 
 Classify each check and use the appropriate tool:
@@ -86,9 +64,6 @@ Classify each check and use the appropriate tool:
 | File exports symbol | Search for export statement | Grep or LSP |
 | Type/interface exists | Find type definition | Grep or LSP |
 | API returns status | Make HTTP request | Bash (curl) |
-| Config value set | Read file, find value | Read + Grep |
-| Environment variable | Check .env or config | Read |
-| Dependency installed | Check package.json / lock file | Read + Grep |
 | Pattern used in file | Search for code pattern | Grep |
 
 ## Protocol
