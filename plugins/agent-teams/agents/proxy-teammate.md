@@ -128,6 +128,18 @@ Then, for Codex and Kimi, extract the session id from the output as soon as it a
 to `session.txt`. Do not wait for the run to finish — the id is printed at the start, and without it
 the whole conversation is unreachable.
 
+**As soon as you have the session id, append one line to the run ledger**
+`.claude/teams/{team-name}/ledger.jsonl` (append with `>>`, never rewrite the file):
+
+```json
+{"ts":"...","event":"launch","role":"{role}","engine":"{engine}","task":"{id}","session":"{session id}","out":"{path}"}
+```
+
+Append a matching `{"event":"done"}` or `{"event":"failed"}` line when the run ends. This is the
+only thing that must survive you — the engine records the conversation itself, but nothing else
+knows which of its sessions was yours. If you die before writing it, the map is rebuilt with
+`scripts/engine-sessions.py`; write the line anyway so nobody has to.
+
 **If the call fails** — binary not found, auth error, non-zero exit, or no model reply in the output
 — send `ENGINE_DOWN: {role}. {one-line reason}` to Lead and stop. Do not retry more than once. Do
 not do the work yourself. Judge by the exit code and the presence of a reply, **not** by stderr

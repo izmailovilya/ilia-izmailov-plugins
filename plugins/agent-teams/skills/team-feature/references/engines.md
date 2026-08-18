@@ -210,9 +210,11 @@ Replaces a `Task()` spawn for one-shot roles. The spawner (usually Lead) does th
    than the 10-minute Bash ceiling, and a foreground call that hits the ceiling loses the result
    even though the engine finished its work. Other one-shot roles may run foreground with
    `timeout: 600000`.
-3. **Read the report** from the output file, not from the terminal buffer. Treat it exactly as the
+3. **Append a ledger line** as soon as the session id appears — see "The Ledger" below. Two lines
+   per run (`launch`, then `done`/`failed`), appended with `>>`.
+4. **Read the report** from the output file, not from the terminal buffer. Treat it exactly as the
    Claude agent's return value.
-4. **On failure** (non-zero exit, empty output, auth error, CLI missing) → apply `fallback`:
+5. **On failure** (non-zero exit, empty output, auth error, CLI missing) → apply `fallback`:
    `claude` = spawn the normal Claude agent for this role and print
    `⚙️ {engine} не ответил на {role} — переключаю на Claude.`; `fail` = stop and report.
 
@@ -326,6 +328,55 @@ list*, and keep protocol-heavy roles on Claude:
 
 This is guidance, not enforcement — the config allows any assignment in the registry. But when a run
 produces confusing results, this table is the first thing to check.
+
+---
+
+## The Ledger — Record Addresses, Not Copies
+
+**Every engine already records itself.** Codex writes the full conversation to
+`~/.codex/sessions/YYYY/MM/DD/rollout-<time>-<id>.jsonl`, Kimi to `~/.kimi-code/sessions/` with an
+index at `session_index.jsonl`, Grok to `~/.grok/sessions/<url-encoded-cwd>/<session-uuid>/`. Claude
+Code likewise records every agent and every message it sends. None of this needs an agent's
+cooperation, and none of it can be forgotten.
+
+So do not duplicate content for safekeeping. **What actually goes missing is the address** — which
+recording belongs to which role, task and round. That is all the ledger stores.
+
+### Format
+
+One append-only file per run: `.claude/teams/{team-name}/ledger.jsonl`. One JSON object per line,
+appended with `>>` — never rewritten, so concurrent writers cannot clobber each other.
+
+```json
+{"ts":"2026-08-18T18:27:34","event":"launch","role":"coder","engine":"codex","task":"B2","session":"01a0157c-2b45-7243-8a37-13777eb171c1","out":".claude/teams/feature-x/engine/coder/001.out.txt"}
+{"ts":"2026-08-18T18:39:02","event":"done","role":"coder","session":"01a0157c-...","result":"14 files changed"}
+```
+
+`event` is `launch`, `done` or `failed`. Omit fields that do not apply.
+
+### Who writes it
+
+Whoever starts an external engine — a proxy teammate, or Lead for a one-shot role — appends the
+`launch` line **as soon as the session id is known**, and a `done` (or `failed`) line when the run
+ends. Two lines per run, no reading, no coordination.
+
+### When the ledger is missing
+
+An agent that dies before writing its line loses nothing that matters: run
+
+```bash
+python3 {plugin}/scripts/engine-sessions.py <project-dir> --since HH:MM
+```
+
+It scans all three engines' own session stores, filters by working directory, and prints each
+session's id, start time, record path and a ready `resume` command. This is the mechanical fallback
+that makes ledger discipline non-critical — the map can always be rebuilt from disk.
+
+### What the ledger replaces
+
+Nothing else changes. `engine/{role}/NNN.prompt.md` and `NNN.out.txt` stay: the prompt file is how a
+long prompt is passed to the CLI at all, and the out file is how the caller reads the result. They
+are mechanism, not backup. The ledger is what makes the engine's own recording findable afterwards.
 
 ---
 

@@ -295,6 +295,12 @@ Guarantees that hold regardless of configuration:
 - Decisions stay on the Claude side — engines produce findings, not approvals.
 - `--engines=off` on a single run ignores the config entirely.
 
+Nothing is duplicated for safekeeping: each engine already records its own full conversation
+(`~/.codex/sessions/`, `~/.kimi-code/sessions/`, `~/.grok/sessions/`), so a run only records the
+*address* — one line per engine call in `.claude/teams/<team>/ledger.jsonl`. If even that is lost,
+`scripts/engine-sessions.py <project>` rebuilds the map from the engines' own stores and prints a
+ready `resume` command for each session.
+
 Full spec — role registry, config schema, CLI presets, failure handling:
 `skills/team-feature/references/engines.md`.
 

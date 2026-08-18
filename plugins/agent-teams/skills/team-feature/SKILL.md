@@ -255,6 +255,7 @@ Per-run artifacts live in `.claude/teams/{team-name}/`:
 |-----------|-----------------|-----------|
 | `reports/` | Review findings, architect debate rounds, researcher / risk / verifier reports | Reviewers, architects, Lead |
 | `engine/` | Prompts, session ids and raw output of external CLI runs | Proxy teammates, Lead |
+| `ledger.jsonl` | One line per external engine run: role, task, session id, outcome. **The address of the engine's own recording** — Codex, Kimi and Grok each keep the full conversation themselves, so this is what makes theirs findable and resumable. Rebuildable with `scripts/engine-sessions.py` | Whoever launches the run |
 | root | `state.md`, `DECISIONS.md`, `VERIFICATION_PLAN.md`, `VERIFICATION_REPORT.md`, `LEGACY_REPORT.md` | Lead, Tech Lead / Primary Architect |
 
 Rules:
