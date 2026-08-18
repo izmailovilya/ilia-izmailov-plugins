@@ -83,6 +83,9 @@ When a coder reports "DONE" and unassigned tasks remain:
    YOUR TEAM ROSTER:
    {current roster from state.md}
 
+   {If foreign changes were present at Step 5, repeat the FOREIGN CHANGES block here —
+    re-run `git status --short` first, since the list may have grown mid-run.}
+
    --- GOLD STANDARD EXAMPLES ---
    {GOLD STANDARD BLOCK}
    --- END GOLD STANDARDS ---

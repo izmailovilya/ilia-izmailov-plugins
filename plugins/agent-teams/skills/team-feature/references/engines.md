@@ -151,17 +151,26 @@ resume:  grok --sandbox {sandbox} --always-approve --effort {effort} -r {session
 model:   grok-4.6
 effort:  high
 sandbox: read → read-only, write → workspace-write
-session: NOT printed by Grok — you generate it yourself (any uuid-shaped string) and pass it in
+session: NOT printed by Grok — you mint it yourself. MUST be a real UUID (`uuidgen`)
 ```
 
 `--always-approve` is MANDATORY — without it Grok silently exits in batch mode waiting for tool
 approval.
 
-**Grok sessions must be given an explicit `--session-id`.** Unlike Codex and Kimi, Grok prints no
-session id in `-p` mode, and a bare `grok -r` resumes *the most recent session in the current
-directory* — so two Grok-backed roles running in the same project would silently share one
-conversation. Always mint an id per role (e.g. `grok-{team-name}-{role}` normalized to a
-uuid-shaped string), pass it on the first call, and reuse it on every resume.
+**Grok sessions must be given an explicit `--session-id`, and it must be a real UUID.** Unlike
+Codex and Kimi, Grok prints no session id in `-p` mode, and a bare `grok -r` resumes *the most
+recent session in the current directory* — so two Grok-backed roles running in the same project
+would silently share one conversation.
+
+Mint one id per role before the first call and reuse it on every resume:
+
+```bash
+uuidgen   # e.g. 7C9E4A2B-1F03-4D8A-9B21-6E5F0C3D8A47
+```
+
+**A readable name like `grok-myteam-coder` is rejected — Grok fails to start.** (Observed in a live
+run on 2026-08-17.) Save the generated UUID to the role's `session.txt` immediately; regenerating it
+later loses the conversation.
 
 ---
 

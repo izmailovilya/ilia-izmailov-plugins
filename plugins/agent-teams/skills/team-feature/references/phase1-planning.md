@@ -888,6 +888,25 @@ No separate security/logic/quality reviewers for COMPLEX — architects cover al
 
 **Enforcement:** Count available tasks. Spawn min(available_tasks, --coders) coders. Do NOT exceed --coders (default 5) at initial spawn.
 
+**Before spawning, check what else is in the working tree.** Run `git status --short`. Any modified
+or untracked file that is NOT part of this feature belongs to someone else — another agent team, or
+the user's own work in progress. Uncommitted work exists in exactly one place, so a coder that
+sweeps it into a commit (or wipes it while cleaning up) destroys something with no copy anywhere.
+
+Coders already have rules against `git add .` and against every reset/checkout/stash/clean command,
+but a rule cannot protect a file the coder does not know exists. If `git status` shows foreign
+changes, add this to **every** coder prompt below — engine-independent, it applies to Claude coders
+too:
+
+```
+FOREIGN CHANGES IN THE WORKING TREE — do not touch, do not stage, do not clean:
+{list of paths from git status that are not part of this feature}
+
+If one of your task's files also appears in that list, someone is editing it alongside you: stage
+your commit by building the file's content from its committed version plus your own change, so
+their edits stay out of your commit. Report it in your DONE digest.
+```
+
 Tell each coder their team roster so they can communicate directly:
 
 **For SIMPLE/MEDIUM:**
