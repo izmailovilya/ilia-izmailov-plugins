@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zero-Downtime Deploy"
+  short_description: "Safe deploys with measured rollback"
+  default_prompt: "Use $zero-downtime-deploy to audit this release path and design a verified zero-downtime rollout with rollback."

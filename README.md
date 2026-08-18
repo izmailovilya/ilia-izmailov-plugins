@@ -100,6 +100,9 @@ Two scouts map the deploy in parallel — one reads the repository, one looks at
 
 [Read more →](./plugins/zero-downtime-deploy/README.md)
 
+Codex users can install the standalone
+[`zero-downtime-deploy` skill](./codex-skills/zero-downtime-deploy) without the Claude plugin runtime.
+
 ---
 
 ### vibe-audit
