@@ -197,15 +197,21 @@ Run this before Phase 1 Step 1. It is cheap and must not be skipped when the con
 
 Replaces a `Task()` spawn for one-shot roles. The spawner (usually Lead) does this instead:
 
-1. **Write the prompt to a file** — never inline a long prompt in the shell command; quoting breaks.
-   Path: `.claude/teams/{team-name}/engine/{role}-{n}.prompt.md`.
+1. **Write the prompt to a file BEFORE launching** — never inline a long prompt in the shell
+   command; quoting breaks. Path: `.claude/teams/{team-name}/engine/{role}-{n}.prompt.md`.
    Content: the exact same prompt the Claude agent would have received, plus the Output Contract
-   below.
-2. **Run the CLI** via Bash with `run_in_background: true` when several are launched at once
-   (researchers, verifiers), or foreground with `timeout: 600000` for a single call.
+   below. Writing it first is not bookkeeping — it is the only thing that survives a hang.
+2. **Run the CLI** via Bash, redirecting output to a file so it exists even if the caller loses it:
+   `... > .claude/teams/{team}/engine/{role}-{n}.out.md 2>&1`.
    Substitute `{prompt}` with `$(cat <path>)` and `{sandbox}` with the role's need
    (`risk-tester` → write, everything else → read).
-3. **Read the report** from the command output. Treat it exactly as the Claude agent's return value.
+
+   **Always `run_in_background: true` for `coder` and `risk-tester`** — they routinely run longer
+   than the 10-minute Bash ceiling, and a foreground call that hits the ceiling loses the result
+   even though the engine finished its work. Other one-shot roles may run foreground with
+   `timeout: 600000`.
+3. **Read the report** from the output file, not from the terminal buffer. Treat it exactly as the
+   Claude agent's return value.
 4. **On failure** (non-zero exit, empty output, auth error, CLI missing) → apply `fallback`:
    `claude` = spawn the normal Claude agent for this role and print
    `⚙️ {engine} не ответил на {role} — переключаю на Claude.`; `fail` = stop and report.

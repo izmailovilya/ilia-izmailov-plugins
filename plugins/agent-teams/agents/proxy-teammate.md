@@ -97,12 +97,33 @@ Write `001.prompt.md` containing, in order:
 4. The incoming request (e.g. the coder's REVIEW message with its file list).
 5. The **Output Contract** below.
 
-Then run the engine's `cmd` with `{prompt}` = `"$(cat <path>)"`, `{sandbox}` = `read-only` for every
-role except `coder` and `risk-tester` (those get `workspace-write`). Use `timeout: 600000` — these
-calls take 2–10 minutes. Pipe output to `NNN.out.txt` and read it.
+**Write the file to disk before you launch anything.** Everything below can hang; the prompt file
+is what makes the run recoverable afterwards. A role that leaves no artifacts cannot be resumed,
+inspected, or handed over — the work is simply lost.
 
-Extract the session id with the pattern you were given and save it to `session.txt`. For Grok there
-is nothing to extract — you mint the id yourself and pass it via `--session-id` on this first call.
+For Grok, mint the session UUID (`uuidgen`) and write it to `session.txt` **now**, before the call —
+you are the one choosing it, so there is no reason to wait.
+
+Then run the engine's `cmd` with `{prompt}` = `"$(cat <path>)"`, `{sandbox}` = `read-only` for every
+role except `coder` and `risk-tester` (those get `workspace-write`). Redirect output to
+`NNN.out.txt` inside the command itself (`> NNN.out.txt 2>&1`) so the result exists on disk even if
+you never see it.
+
+- **`coder` and `risk-tester`: always `run_in_background: true`.** Their runs routinely exceed the
+  10-minute Bash ceiling, and a foreground call that hits the ceiling loses the report while the
+  engine has already changed files — the worst possible outcome, because the work happened and
+  nobody can say what it was.
+- Other roles: foreground with `timeout: 600000`.
+
+**Immediately after launching, send Lead one line:**
+
+```
+ENGINE RUNNING: {role} on {engine}, started {HH:MM}, expect ~{N} min
+```
+
+Then, for Codex and Kimi, extract the session id from the output as soon as it appears and write it
+to `session.txt`. Do not wait for the run to finish — the id is printed at the start, and without it
+the whole conversation is unreachable.
 
 **If the call fails** — binary not found, auth error, non-zero exit, or no model reply in the output
 — send `ENGINE_DOWN: {role}. {one-line reason}` to Lead and stop. Do not retry more than once. Do
