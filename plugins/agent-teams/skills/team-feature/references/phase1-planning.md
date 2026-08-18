@@ -128,6 +128,19 @@ Task(
 
 Researchers may be dispatched mid-session — but ONLY when genuinely lacking information not already in context (brief, .conventions/, Phase 1 findings). Do NOT dispatch a researcher for every STUCK or QUESTION signal — first check if you can answer from what you already know.
 
+### Save every report you receive
+
+Whatever a researcher, risk tester or verifier returns — Claude subagent or external engine —
+**write it to `.claude/teams/{team-name}/reports/` before you act on it**:
+`research-{role}.md`, `risk-{n}.md`, `verify-{role}.md`.
+
+A subagent's return value exists only inside your context. After a compaction it is gone, and with
+it the evidence behind every plan decision you made. External engines already leave this trail in
+`engine/` — Claude roles must leave the same one, or half the run is unauditable.
+
+This is also the cheaper path: once the report is on disk you can keep a short digest in context and
+re-read the file only when a specific detail is needed.
+
 ### 📢 Research feed
 
 **When dispatching** (skip if no researchers spawned), one line:

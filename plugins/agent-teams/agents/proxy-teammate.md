@@ -115,10 +115,13 @@ you never see it.
   nobody can say what it was.
 - Other roles: foreground with `timeout: 600000`.
 
-**Immediately after launching, send Lead one line:**
+**Immediately after launching, tell Lead where to look.** Do not estimate how long it will take —
+you cannot know, and a wrong estimate is worse than none. Report only checkable facts:
 
 ```
-ENGINE RUNNING: {role} on {engine}, started {HH:MM}, expect ~{N} min
+ENGINE RUNNING: {role} on {engine}, started {HH:MM}
+  process: {pid if known}
+  output: .claude/teams/{team-name}/engine/{role}/{NNN}.out.txt
 ```
 
 Then, for Codex and Kimi, extract the session id from the output as soon as it appears and write it

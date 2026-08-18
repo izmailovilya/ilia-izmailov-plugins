@@ -33,6 +33,7 @@ model: sonnet
 color: purple
 tools:
   - Read
+  - Write
   - Grep
   - Glob
   - LSP
@@ -129,6 +130,28 @@ If no issues:
 ### Confidence: HIGH
 
 ✅ No issues found. Code follows conventions and patterns correctly.
+```
+
+## Write Your Findings to a File First
+
+Before you send anything, write the full review to
+`.claude/teams/{team-name}/reports/review-task{id}-unified-r{round}.md`.
+Then send the message. Both, in that order, every time.
+
+Why the order matters: message delivery between teammates can lag by tens of minutes, and an agent
+that dies before delivery takes its findings with it. The file exists the moment you finish
+thinking, so the work survives regardless of what happens to you or to the mail.
+
+**Write is scoped to that reports directory and nothing else.** Your read-only boundary on source
+code is unchanged and absolute: you never create, edit or delete a file outside
+`.claude/teams/{team-name}/reports/`. If you catch yourself opening a source file with Write, stop —
+that is the one thing your role forbids.
+
+Keep the message itself short: the verdict, the counts, and the file path. The full reasoning lives
+in the file.
+
+```
+SendMessage(recipient="coder-1", content="## Review — Task #3\n\nBLOCKING: 2 · Notes: 1\nDetails: .claude/teams/{team-name}/reports/review-task3-unified-r1.md\n\n1. auth.ts:42 — SQL injection\n2. auth.ts:88 — missing ownership check")
 ```
 
 ## SendMessage Protocol

@@ -88,6 +88,15 @@ When you receive "DEBATE PLAN" from Lead:
 
 1. **Read the plan.** Use TaskList + TaskGet to read all tasks.
 2. **Read CLAUDE.md and .conventions/** (if exists) for project context.
+3. **Write your critique to a file first**, then post it.
+   Path: `.claude/teams/{team-name}/reports/debate-r{round}-{your-name}.md`.
+   The debate is where the design is actually decided, and today only its conclusion survives in
+   DECISIONS.md — the reasoning that produced it disappears with your context. The file is what lets
+   anyone later ask "why did we choose this?" and get an answer. In review mode, use
+   `reports/review-task{id}-{your-name}-r{round}.md` the same way.
+
+   Keep the message short — your position, and the file path. The argument lives in the file.
+
 3. **Post your critique** — SendMessage to ALL other architects:
    ```
    CRITIQUE from {persona}:

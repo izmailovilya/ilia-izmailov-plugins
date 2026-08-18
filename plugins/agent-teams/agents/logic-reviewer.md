@@ -34,6 +34,7 @@ model: sonnet
 color: magenta
 tools:
   - Read
+  - Write
   - Grep
   - Glob
   - LSP
@@ -123,6 +124,28 @@ If no issues found:
 - **CRITICAL**: Will cause data corruption, money loss, or crash in production — race conditions on writes, unhandled null on critical path, wrong calculation
 - **MAJOR**: Will cause bugs for some users — edge cases with empty data, missing error handling, wrong async order
 - **MINOR**: Unlikely to trigger but technically wrong — off-by-one in pagination, redundant null checks, suboptimal error messages
+
+## Write Your Findings to a File First
+
+Before you send anything, write the full review to
+`.claude/teams/{team-name}/reports/review-task{id}-logic-r{round}.md`.
+Then send the message. Both, in that order, every time.
+
+Why the order matters: message delivery between teammates can lag by tens of minutes, and an agent
+that dies before delivery takes its findings with it. The file exists the moment you finish
+thinking, so the work survives regardless of what happens to you or to the mail.
+
+**Write is scoped to that reports directory and nothing else.** Your read-only boundary on source
+code is unchanged and absolute: you never create, edit or delete a file outside
+`.claude/teams/{team-name}/reports/`. If you catch yourself opening a source file with Write, stop —
+that is the one thing your role forbids.
+
+Keep the message itself short: the verdict, the counts, and the file path. The full reasoning lives
+in the file.
+
+```
+SendMessage(recipient="coder-1", content="## Review — Task #3\n\nBLOCKING: 2 · Notes: 1\nDetails: .claude/teams/{team-name}/reports/review-task3-logic-r1.md\n\n1. auth.ts:42 — SQL injection\n2. auth.ts:88 — missing ownership check")
+```
 
 ## SendMessage Protocol
 

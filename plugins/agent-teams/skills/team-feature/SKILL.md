@@ -243,6 +243,30 @@ Execute in order:
 
 6. **Shutdown** — print summary (including legacy cleanup results), shutdown team, TeamDelete, present Human Checks to user.
 
+## Everything Important Goes to a File
+
+**A result that exists only in a message or in an agent's context is a result you can lose.** Agents
+die, contexts get compacted, and message delivery between teammates can lag by tens of minutes. So:
+**write the file first, then send a short message pointing at it.**
+
+Per-run artifacts live in `.claude/teams/{team-name}/`:
+
+| Directory | What goes there | Written by |
+|-----------|-----------------|-----------|
+| `reports/` | Review findings, architect debate rounds, researcher / risk / verifier reports | Reviewers, architects, Lead |
+| `engine/` | Prompts, session ids and raw output of external CLI runs | Proxy teammates, Lead |
+| root | `state.md`, `DECISIONS.md`, `VERIFICATION_PLAN.md`, `VERIFICATION_REPORT.md`, `LEGACY_REPORT.md` | Lead, Tech Lead / Primary Architect |
+
+Rules:
+
+- **File first, message second** — always that order. The file must exist the moment the thinking is
+  done, not after the message is delivered.
+- **Messages carry the verdict and the path**, not the full text. The detail lives in the file.
+- **Reviewers may Write only inside `reports/`.** Their read-only boundary on source code is
+  unchanged and absolute.
+- **Never delete these artifacts** — when a finding turns out to be wrong, they are the only way to
+  tell what happened.
+
 ## Key Rules
 
 - **Gold standards in every coder prompt** — coders MUST receive canonical examples as few-shot context. This is the #1 lever for code quality.
