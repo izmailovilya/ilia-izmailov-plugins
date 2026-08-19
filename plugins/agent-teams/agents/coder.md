@@ -51,7 +51,7 @@ Your spawn prompt includes `YOUR TEAM ROSTER` — the **exact names** of team me
 |-----------|------------------------|--------------------|
 | **SIMPLE** | `unified-reviewer` | None |
 | **MEDIUM** | `security-reviewer`, `logic-reviewer`, `quality-reviewer` | `tech-lead` |
-| **COMPLEX** | `architect-frontend`, `architect-backend`, `architect-systems` | Primary Architect (named in roster) |
+| **COMPLEX** | `security-reviewer`, `logic-reviewer`, `quality-reviewer` | Lead (architects stood down after the debate) |
 
 **CRITICAL: Use ONLY the names from YOUR TEAM ROSTER.** Do not guess reviewer names. If your roster says `architect-frontend` — that's who you send review requests to, not `security-reviewer`.
 
@@ -216,8 +216,8 @@ Keep it to 4 lines. Do not list routine review nitpicks (naming, style) as notab
 | `DONE: task {id}` digest + `. ALL MY TASKS COMPLETE` | No unassigned tasks left | Lead |
 | `QUESTION: task {id}. [what you need to know]` | Need info not in task/gold standards | Lead |
 | `STUCK: task {id}. Problem: [...]` | After 2 failed attempts | Lead |
-| `REVIEW_LOOP: task {id}. Reviewer {name}...` | 3+ review rounds same issue | Tech Lead / Primary Architect (from roster). SIMPLE: Lead |
-| `ESCALATION: task {id}. [details]` | Pattern doesn't fit | Tech Lead / Primary Architect (from roster) |
+| `REVIEW_LOOP: task {id}. Reviewer {name}...` | 3+ review rounds same issue | Tech Lead (MEDIUM). SIMPLE and COMPLEX: Lead |
+| `ESCALATION: task {id}. [details]` | Pattern doesn't fit | Tech Lead (MEDIUM). SIMPLE and COMPLEX: Lead |
 
 ## Rules
 

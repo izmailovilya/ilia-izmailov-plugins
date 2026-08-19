@@ -723,16 +723,23 @@ This brief replaces you in the review phase, so write what a competent reviewer 
 from the task and the gold standards alone. Then send DONE and stop working."
 ```
 
-**Step 5a-2 — Primary Architect stays, but only as the decision gate.** It does NOT review code
-per task. Its remaining job: escalations, pattern-deviation rulings, DECISIONS.md, and the
-cross-task consistency check in Phase 3. That is tens of turns, not hundreds.
+**Step 5a-2 — the Primary Architect stands down too.** The "Primary" designation matters only
+during the debate, as the tiebreaker; once the spec is approved there is nothing left that needs a
+session-long architect. Measured across real runs, the post-debate architect was invoked **twice** —
+two escalations, zero review-loop arbitrations. Keeping an agent alive for the whole run to answer
+twice is the same mistake as keeping architects on for review, just quieter.
 
-```
-SendMessage to {primary architect}:
-"You remain as the architectural decision gate. You no longer review code per task — reviewers do
-that now. You handle: escalations from coders, pattern-deviation rulings, DECISIONS.md, and the
-Phase 3 cross-task consistency check. Stay idle until one of those arrives."
-```
+Its duties are reassigned:
+
+| Duty | Now handled by |
+|------|----------------|
+| Coder escalations ("this pattern doesn't fit") | **Lead** — this is a scope-and-plan decision, and Lead owns both |
+| Review-loop arbitration | **Lead** — both sides state their position in a few lines; Lead rules on which matches the plan |
+| DECISIONS.md | **Lead** — it already maintains state.md |
+| Phase 3 cross-task consistency | **A one-shot consistency checker** — reads the final diff, reports, dies (Phase 3 Step 2) |
+
+Only the last one genuinely needs to read code, and a one-shot agent does it with a narrow context
+instead of carrying a debate transcript through the whole run.
 
 **Step 5a-3 — spawn reviewers** exactly as for MEDIUM (see the three `Task(...)` blocks above), with
 the architects' briefs added to each prompt:

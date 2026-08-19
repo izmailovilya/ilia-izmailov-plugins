@@ -112,7 +112,7 @@ schema, presets, both mechanics, failure handling). No config file → one Read 
 | **Security Reviewer** | Whole session | Coder only | Injection, XSS, auth bypasses, IDOR, secrets |
 | **Logic Reviewer** | Whole session | Coder only | Race conditions, edge cases, null handling, async |
 | **Quality Reviewer** | Whole session | Coder only | DRY, naming, abstractions, CLAUDE.md + conventions compliance |
-| **Architect** (COMPLEX) | Debate only | Other Architects + Lead | Debate the spec, then write a domain review brief and stand down. Only the Primary Architect stays, as the decision gate — escalations, DECISIONS.md, cross-task consistency. Code review goes to the reviewers. |
+| **Architect** (COMPLEX) | Debate only | Other Architects + Lead | Debate the spec, then write a domain review brief and stand down — all three, Primary included. Review goes to the reviewers, decisions to Lead, the final consistency check to a one-shot agent. |
 
 ## Complexity Classification
 
@@ -124,7 +124,7 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 |-----------|------------------|--------------|
 | **SIMPLE** (0-1 MEDIUM triggers) | Lead + Coder + Unified Reviewer | 3 |
 | **MEDIUM** (2-3 MEDIUM triggers, 0 COMPLEX) | Lead + Coder + 3 Reviewers + Tech Lead | 6 |
-| **COMPLEX** (4+ MEDIUM or 1+ COMPLEX trigger) | Lead + 3 Architects (debate, then stand down) + Primary Architect as decision gate + 3 Reviewers + Coder(s) + Researchers + Risk Testers | 5-8+ |
+| **COMPLEX** (4+ MEDIUM or 1+ COMPLEX trigger) | Lead + 3 Architects (debate, then stand down) + 3 Reviewers + Coder(s) + Researchers + Risk Testers | 5-8+ |
 
 **Why architects do not review on COMPLEX:** they are cheap in debate and expensive in review, because by review time they carry the whole debate transcript. Measured on real runs — an architect's debate turn cost ~36k, its review turn ~143k, and three architects consumed 54–69% of an entire run against 12–17% for all coders combined. So the debate stays, the tenure ends: architects hand over a domain review brief, and fresh reviewers start narrow and stay narrow.
 
@@ -215,7 +215,7 @@ Execute in order:
 
 1. **Conventions update** — assign the conventions task to a coder.
 
-2. **Cross-task consistency check** — ask Tech Lead / Primary Architect.
+2. **Cross-task consistency check** — Tech Lead (MEDIUM), or a one-shot Explore agent over the combined diff (SIMPLE/COMPLEX).
 
 3. **Completion gate** — verify `.conventions/` exists and was modified this session.
 

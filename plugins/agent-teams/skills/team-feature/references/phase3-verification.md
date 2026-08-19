@@ -18,7 +18,37 @@ After the conventions task is done, report what was created/updated in the summa
 
 ## 2. Cross-Task Consistency Check
 
-Ask Tech Lead for a **final cross-task consistency check**.
+**MEDIUM:** ask Tech Lead for a final cross-task consistency check.
+
+**SIMPLE and COMPLEX:** no long-lived architectural agent exists by now — on COMPLEX the architects
+handed over review briefs and stood down after the debate. Spawn a **one-shot** checker instead. It
+needs to read code, which Lead deliberately does not do, but it needs to read only the final diff —
+a narrow context that dies with the agent:
+
+```
+Task(
+  subagent_type="Explore",
+  description="Cross-task consistency check",
+  prompt="Review the combined diff of this feature for cross-task inconsistencies — the problems
+that appear only when separate tasks are put together, and that a per-task reviewer could not see.
+
+Diff: `git diff {base-commit}..HEAD`
+Feature: {1-2 line description}
+Definition of Done: {DoD}
+Architect review briefs (COMPLEX): {paths to reports/review-brief-*.md — read them}
+
+Look for: the same concept named or modelled two different ways across tasks; duplicated logic that
+two coders wrote independently; contradictory assumptions at the seams between tasks; a shared type,
+config or schema changed by one task in a way another task did not account for.
+
+Do NOT report per-task issues — reviewers already covered those. Only report what needs two or more
+tasks side by side to notice.
+
+Return a short list: file:line, what is inconsistent, which tasks disagree. Empty list if clean."
+)
+```
+
+Findings become fix tasks in the same fix-verify loop as everything else.
 
 ## 3. Completion Gate
 
