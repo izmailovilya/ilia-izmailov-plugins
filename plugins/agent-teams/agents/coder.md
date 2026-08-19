@@ -182,9 +182,17 @@ When ALL reviewers and tech-lead have responded and all issues are fixed:
 2. Commit your changes: `feat: <what was done> (task #{id})`
 3. **If the commit fails** (pre-commit hook, conflict, anything): do NOT try to "clean up". Just report `STUCK: task {id}. Commit failed: <error>` to Lead and stop. Leave the working tree exactly as it is — Lead/user will decide what to do. **Never run `git reset`, `git checkout -- <file>`, `git restore`, `git stash`, or `git clean` in any form** — these can wipe work from other agent teams running locally in parallel. If you can't commit, just don't commit.
 4. Mark task as completed (TaskUpdate status=completed)
-5. Check TaskList for next available unassigned task
-6. If found → claim it (TaskUpdate owner=coder-{N}) and send the DONE digest (format below) with `, claiming task {next_id}` appended to the first line. Then repeat from Step 1 for the new task.
-7. If none → send the DONE digest with `. ALL MY TASKS COMPLETE` appended to the first line.
+5. **Write a handover note** — `.claude/teams/{team-name}/reports/handover-task{id}.md`, at most 10 lines.
+   Only what the next coder cannot get from the task description, the gold standards or the code
+   itself: dead ends you already tried, gotchas in this area, why an obvious approach does not work.
+   Nothing that is already written down somewhere else. If there is genuinely nothing, write "none".
+6. **Send the DONE digest and stop.** Do NOT claim another task — your context now carries this whole
+   task and every review round of it, and none of that helps the next one. Lead will start a fresh
+   coder, which is cheaper: a new coder pays once to load its role and its own files, while you would
+   pay for this task's history on every remaining turn of the run.
+
+   Append `. TASK COMPLETE, standing down` to the first line of the digest. Then stop working — do not
+   read files, do not look for more work.
 
 **DONE digest format** — Lead relays this to the user, so write SUMMARY/REVIEW/EDGE CASES in plain product language (what a non-programmer understands), not code terms:
 

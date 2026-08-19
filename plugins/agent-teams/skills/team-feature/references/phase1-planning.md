@@ -696,18 +696,54 @@ Pay special attention to the confirmed risks above — verify that code properly
 
 For quality-reviewer, omit the confirmed-risks line and the last sentence — instead: "Verify code matches the gold standard patterns and project conventions."
 
-**For COMPLEX** — switch architects to review mode (already spawned from Step 4c):
+**For COMPLEX** — architects hand over and stand down; fresh reviewers take over code review.
+
+Architects are excellent at the debate and terrible value in review, and the reason is mechanical:
+by the time review starts they carry the whole debate transcript, so every review turn costs several
+times what a debate turn cost. Measured on a real run: an architect's debate turns cost ~36k each,
+its review turns ~143k each — same agent, same work, four times the price. Across two runs the three
+architects consumed 54% and 69% of the entire run, against 12–17% for all coders combined.
+
+So: keep the debate, end the tenure.
+
+**Step 5a-1 — collect a review brief from each architect** (this is where their domain expertise is
+preserved), then let them go:
+
 ```
 SendMessage to architect-frontend, architect-backend, architect-systems:
-"SWITCH TO REVIEW MODE. The debate phase is complete.
+"DEBATE COMPLETE — HAND OVER AND STAND DOWN.
 
-You now review code from coders — each from your persona's domain.
+Write a review brief for your domain to
+.claude/teams/{team-name}/reports/review-brief-{your-name}.md — at most 25 lines:
+- what a reviewer must check in your domain for THIS feature specifically
+- the traps you identified during the debate and where they would surface
+- which files or boundaries deserve extra suspicion
 
-CONFIRMED RISKS FROM RISK ANALYSIS:
-{List confirmed risks from Step 4b — verify that code properly addresses their mitigations during review}
-
-Wait for REVIEW requests from coders via SendMessage."
+This brief replaces you in the review phase, so write what a competent reviewer could not derive
+from the task and the gold standards alone. Then send DONE and stop working."
 ```
+
+**Step 5a-2 — Primary Architect stays, but only as the decision gate.** It does NOT review code
+per task. Its remaining job: escalations, pattern-deviation rulings, DECISIONS.md, and the
+cross-task consistency check in Phase 3. That is tens of turns, not hundreds.
+
+```
+SendMessage to {primary architect}:
+"You remain as the architectural decision gate. You no longer review code per task — reviewers do
+that now. You handle: escalations from coders, pattern-deviation rulings, DECISIONS.md, and the
+Phase 3 cross-task consistency check. Stay idle until one of those arrives."
+```
+
+**Step 5a-3 — spawn reviewers** exactly as for MEDIUM (see the three `Task(...)` blocks above), with
+the architects' briefs added to each prompt:
+
+```
+--- REVIEW BRIEFS FROM THE ARCHITECT DEBATE ---
+{contents of reports/review-brief-*.md — all three, they are 25 lines each}
+--- END BRIEFS ---
+```
+
+Reviewers start narrow (~90k) and stay narrow, which is the entire point of the swap.
 
 ### 2. Coders (up to --coders in parallel, uses `agents/coder.md`)
 
@@ -775,9 +811,10 @@ Claim your first task from the task list and start working."
   ```
 - **COMPLEX:**
   ```
-  - Reviewers: architect-frontend, architect-backend, architect-systems
-    (send REVIEW requests to ALL 3 — each reviews from their persona's domain)
-  - Primary Architect: {primary architect name} (escalations, architectural decisions)
+  - Reviewers: security-reviewer, logic-reviewer, quality-reviewer
+    (the architects handed over review briefs and stood down — do NOT message them)
+  - Primary Architect: {primary architect name} — escalations and architectural decisions ONLY,
+    not per-task code review. Do not send REVIEW requests there.
   - Lead: for DONE/STUCK signals only
   ```
   For COMPLEX, also make the DECISIONS.md line unconditional: "Read DECISIONS.md at .claude/teams/{team-name}/DECISIONS.md before starting — it contains the architect debate summary, confirmed risks, and mitigations that affect your implementation."
@@ -842,9 +879,11 @@ When you change Phase to VERIFICATION, execute IN ORDER (full details: reference
 - quality-reviewer: {ACTIVE | NOT_SPAWNED}
 - unified-reviewer: {ACTIVE | NOT_SPAWNED}
 ### COMPLEX:
-- architect-frontend: {ACTIVE | NOT_SPAWNED} {PRIMARY if designated}
-- architect-backend: {ACTIVE | NOT_SPAWNED} {PRIMARY if designated}
-- architect-systems: {ACTIVE | NOT_SPAWNED} {PRIMARY if designated}
+- architect-frontend: {DEBATING | STOOD_DOWN | ACTIVE if PRIMARY} {PRIMARY if designated}
+- architect-backend: {DEBATING | STOOD_DOWN | ACTIVE if PRIMARY} {PRIMARY if designated}
+- architect-systems: {DEBATING | STOOD_DOWN | ACTIVE if PRIMARY} {PRIMARY if designated}
+- security-reviewer / logic-reviewer / quality-reviewer: {ACTIVE | NOT_SPAWNED}
+  (spawned at Step 5a-3, after the architects handed over)
 
 ## Tasks
 - #{id}: {subject} — {STATUS} ({assignment})

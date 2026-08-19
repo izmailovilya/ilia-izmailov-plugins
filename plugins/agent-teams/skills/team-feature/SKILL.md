@@ -112,7 +112,7 @@ schema, presets, both mechanics, failure handling). No config file → one Read 
 | **Security Reviewer** | Whole session | Coder only | Injection, XSS, auth bypasses, IDOR, secrets |
 | **Logic Reviewer** | Whole session | Coder only | Race conditions, edge cases, null handling, async |
 | **Quality Reviewer** | Whole session | Coder only | DRY, naming, abstractions, CLAUDE.md + conventions compliance |
-| **Architect** (COMPLEX) | Whole session | Other Architects + Coders + Lead | Debate spec (Phase 1), review code in domain (Phase 2+). Replaces Tech Lead + 3 Reviewers. |
+| **Architect** (COMPLEX) | Debate only | Other Architects + Lead | Debate the spec, then write a domain review brief and stand down. Only the Primary Architect stays, as the decision gate — escalations, DECISIONS.md, cross-task consistency. Code review goes to the reviewers. |
 
 ## Complexity Classification
 
@@ -124,7 +124,9 @@ Classify after researchers return. Follow the detailed algorithm in `references/
 |-----------|------------------|--------------|
 | **SIMPLE** (0-1 MEDIUM triggers) | Lead + Coder + Unified Reviewer | 3 |
 | **MEDIUM** (2-3 MEDIUM triggers, 0 COMPLEX) | Lead + Coder + 3 Reviewers + Tech Lead | 6 |
-| **COMPLEX** (4+ MEDIUM or 1+ COMPLEX trigger) | Lead + 3 Architects (debate → review) + Coder(s) + Researchers + Risk Testers | 5-8+ |
+| **COMPLEX** (4+ MEDIUM or 1+ COMPLEX trigger) | Lead + 3 Architects (debate, then stand down) + Primary Architect as decision gate + 3 Reviewers + Coder(s) + Researchers + Risk Testers | 5-8+ |
+
+**Why architects do not review on COMPLEX:** they are cheap in debate and expensive in review, because by review time they carry the whole debate transcript. Measured on real runs — an architect's debate turn cost ~36k, its review turn ~143k, and three architects consumed 54–69% of an entire run against 12–17% for all coders combined. So the debate stays, the tenure ends: architects hand over a domain review brief, and fresh reviewers start narrow and stay narrow.
 
 ## Protocol Overview
 
@@ -142,7 +144,7 @@ Execute these steps in order:
 
 3. **Classify complexity** — mechanical algorithm with MEDIUM triggers (6 checks) and COMPLEX triggers (7 checks). Not overridable. Create team, write VERIFICATION_PLAN.md (SIMPLE/MEDIUM) or defer to architects (COMPLEX). Compile gold standard block for coders. Create tasks with acceptance criteria + convention checks.
 
-4. **Validate plan** — SIMPLE: skip. MEDIUM: Tech Lead validates. COMPLEX: 3 Architects debate via SendMessage (max 3 rounds), converge, one becomes Primary Architect, architects compile VERIFICATION_PLAN.md.
+4. **Validate plan** — SIMPLE: skip. MEDIUM: Tech Lead validates. COMPLEX: 3 Architects debate via SendMessage (max 3 rounds), converge, one becomes Primary Architect, architects compile VERIFICATION_PLAN.md, then hand over review briefs and stand down.
 
 4c-4. **Plan Brief to user — HARD GATE** (COMPLEX/MEDIUM; SIMPLE skips). See `phase1-planning.md` Step 4c-4.
 
@@ -150,7 +152,7 @@ Execute these steps in order:
 
 4b. **Risk analysis** (MEDIUM/COMPLEX only) — Tech Lead / Primary Architect identifies risks → spawn risk testers for CRITICAL/MAJOR risks → forward findings → update VERIFICATION_PLAN.md with mitigations.
 
-5. **Spawn team** — reviewers (or switch architects to review mode) + coders with gold standard block + write state.md for compaction resilience.
+5. **Spawn team** — reviewers (on COMPLEX too, after the architects hand over) + coders with gold standard block + write state.md for compaction resilience.
 
 ### Phase 2: Execution — Monitor Mode
 
