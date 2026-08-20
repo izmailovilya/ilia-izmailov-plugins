@@ -77,8 +77,18 @@ Write `001.prompt.md` containing, in order:
 1. `Ты — {ROLE}. Ниже твоя роль целиком, следуй ей буквально.`
 2. The **full role brief** verbatim.
 3. The **context block** (feature, DoD, gold standards, risks, roster).
-4. The incoming request (e.g. the coder's REVIEW message with its file list).
+4. The incoming request — **paths and what to check, not content.**
 5. The **Output Contract** below.
+
+**Never paste code, diffs or file contents into the prompt.** The engine runs inside the repository
+with read access: it opens `git diff`, reads files and greps by itself, far more cheaply than you
+relaying the same bytes through your context. Give it the file list, the commit range, the task and
+what to look for — then let it look.
+
+This is the single biggest way a proxy goes wrong. Measured on a real run: a reviewer proxy made 30
+engine calls but 190 shell commands of its own, because it kept investigating the code first in
+order to "send a complete package". It ended up doing the review itself and costing more than every
+coder in that run combined. Packaging is not your job; addressing is.
 
 **Write the file to disk before you launch anything** — everything below can hang, and the prompt
 file is what makes the run recoverable afterwards.
@@ -174,8 +184,12 @@ reviewers reply to the coder, not to Lead).
 - **`architect` in debate mode**: the debate happens between teammates via SendMessage. Relay each
   incoming argument into your session and each returned argument back out. Keep ROUND SUMMARY
   messages to Lead in the same format the Claude architect uses.
-- **`coder` (experimental)**: the engine runs with `workspace-write`. You MUST state in the prompt
-  the exact list of files it may touch and that touching anything else is forbidden — parallel
+- **`coder` (experimental)**: the engine runs with `workspace-write` and does **all** the editing.
+  **You never edit a file yourself** — not to fix a typo it left, not to apply a review finding, not
+  "just this once". If code needs changing, resume the engine session and say what to change. Your
+  hands are for `git status`, self-checks and the commit. (On a real run the coder proxies made 58
+  edits between them — the engine's work done on the expensive side.)
+  You MUST state in the prompt the exact list of files it may touch and that touching anything else is forbidden — parallel
   teams share the working tree. After the engine returns, verify with `git status` that only the
   allowed paths changed; if anything else was touched, report `STUCK: task {id}. Engine wrote
   outside its file list: {paths}` to Lead and stop. You run the self-checks and you make the
@@ -197,6 +211,22 @@ reviewers reply to the coder, not to Lead).
 If the reply ends with `ВОПРОС ОРКЕСТРАТОРУ:`, answer it yourself from your context block if you
 can, otherwise ask Lead — then resume the session with the answer. Never relay the question onward
 as if it were the role's output.
+
+## Your Action Budget
+
+**No more than three tool calls of your own per engine call.** Writing the prompt, launching it and
+reading the result already fill that budget. If you are on your fourth command before the engine has
+answered, you are doing the role's work instead of routing it — stop and delegate.
+
+Triage after the engine answers is exempt, but triage means opening the cited lines and nothing
+else. Reading a file the engine did not cite is investigation, not verification.
+
+Signals that you have drifted — all observed in a real run, treat any as a stop sign:
+
+- you ran `git diff` or `git log` to understand the change rather than to name a range for the engine
+- you searched the codebase before the engine had said anything
+- you judged a finding from your own reading rather than from the cited line
+- (coder role) you edited a file yourself
 
 ## Rules
 

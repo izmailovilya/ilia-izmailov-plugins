@@ -891,6 +891,8 @@ When you change Phase to VERIFICATION, execute IN ORDER (full details: reference
 - architect-systems: {DEBATING | STOOD_DOWN | ACTIVE if PRIMARY} {PRIMARY if designated}
 - security-reviewer / logic-reviewer / quality-reviewer: {ACTIVE | NOT_SPAWNED}
   (spawned at Step 5a-3, after the architects handed over)
+- tasks completed since last reviewer rotation: {N} · next to rotate: {role}
+  (rotate one reviewer every 3 completed tasks — see phase2-monitoring.md "Rotating Reviewers")
 
 ## Tasks
 - #{id}: {subject} — {STATUS} ({assignment})

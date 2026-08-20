@@ -186,6 +186,13 @@ Replaces a `Task()` spawn for one-shot roles. The spawner (usually Lead) does th
    command; quoting breaks. Path: `.claude/teams/{team-name}/engine/{role}-{n}.prompt.md`.
    Content: the exact same prompt the Claude agent would have received, plus the Output Contract
    below. Writing it first is not bookkeeping — it is the only thing that survives a hang.
+
+   **Pass paths, not contents.** The engine runs in the project directory and reads files itself.
+   Pasting diffs or file bodies into the prompt means paying, in the caller's context, for bytes the
+   engine could have read for free.
+   The one exception is the gold standard block for a coder — those snippets may live outside the
+   repository (in `.conventions/`), so name the path when there is one and inline only when there is
+   not.
 2. **Run the CLI** via Bash, redirecting output to a file so it exists even if the caller loses it:
    `... > .claude/teams/{team}/engine/{role}-{n}.out.md 2>&1`.
    Substitute `{prompt}` with `$(cat <path>)` and `{sandbox}` with the role's need

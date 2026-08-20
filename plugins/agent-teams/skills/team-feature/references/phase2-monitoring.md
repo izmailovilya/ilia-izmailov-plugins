@@ -54,6 +54,43 @@ After every event, update `.claude/teams/{team-name}/state.md`:
 
 If context feels incomplete or current state is unclear: read `.claude/teams/{team-name}/state.md` — it is self-describing (the **Phase** field tells which phase instructions to follow step by step; roster, task statuses, and exact commands are all there). Honor its `## Engines` section for later spawns — do NOT re-read `~/.claude/agent-teams.json` and do NOT re-probe the CLIs; if the section is absent, every role is Claude.
 
+## Rotating Reviewers
+
+Reviewers live for the whole run, so they accumulate every review of every task — the same disease
+the architects had. Measured on a real run: three reviewers took **55%** of the whole run, and the
+heaviest one reached a 346k context and cost more than all eleven coders combined.
+
+**Rotate one reviewer every 3 completed tasks, round-robin.** Never all three at once — that drops
+all continuity at the same moment. Rotation happens at a task boundary, never mid-review.
+
+When the counter comes up for reviewer X:
+
+1. SendMessage to X:
+   ```
+   ROTATION. Write a standing-findings note to
+   .claude/teams/{team-name}/reports/standing-{your-role}-{n}.md — at most 15 lines:
+   - issues you saw repeat across more than one task
+   - decisions already settled, so your successor does not reopen them
+   - what deserves extra suspicion in the remaining tasks
+   Do NOT summarise your individual reviews — they are all in reports/. Then send DONE and stop.
+   ```
+2. Wait for DONE, then shut X down.
+3. Spawn a fresh reviewer under **the same name** (so coders' rosters stay valid), with the normal
+   Step 5 prompt plus:
+   ```
+   --- STANDING FINDINGS FROM YOUR PREDECESSOR ---
+   {contents of reports/standing-{role}-*.md — all of them, 15 lines each}
+   --- END ---
+   ```
+4. 📢 `🔄 {Ревьюер X} сменился — новый принял смену, накопленные наблюдения переданы.`
+
+The successor starts near 100k instead of 350k. What is lost is the memory of individual past
+reviews; what mattered — the cross-task patterns — is in the note, and every review itself is in
+`reports/`.
+
+**Do not rotate on a timer or on turn count.** Task boundaries are the only safe point: no review is
+in flight, and no coder is waiting on an answer.
+
 ## Spawning New Coders
 
 When a coder reports "DONE" and unassigned tasks remain:

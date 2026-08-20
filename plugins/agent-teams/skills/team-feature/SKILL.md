@@ -162,7 +162,8 @@ Execute these steps in order:
 
 - Prints a progress feed line for every meaningful event (see Progress Feed table in `phase2-monitoring.md`)
 - Tracks progress in state.md (task status updates)
-- Spawns new coders when tasks complete and unassigned work remains
+- Spawns new coders when tasks complete and unassigned work remains (one task per coder — they stand down after it)
+- Rotates one reviewer every 3 completed tasks, round-robin, so reviewers do not accumulate the whole run
 - Handles STUCK/QUESTION/REVIEW_LOOP escalations
 - Transitions to Phase 3 when ALL coding tasks complete
 
