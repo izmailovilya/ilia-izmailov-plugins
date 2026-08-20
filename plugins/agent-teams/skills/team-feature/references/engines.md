@@ -331,7 +331,13 @@ appended with `>>` — never rewritten, so concurrent writers cannot clobber eac
 {"ts":"2026-08-18T18:39:02","event":"done","role":"coder","session":"01a0157c-...","result":"14 files changed"}
 ```
 
-`event` is `launch`, `done` or `failed`. Omit fields that do not apply.
+`event` is `launch`, `engine_done`, `checks_done`, `committed`, `done` or `failed`. Omit fields that
+do not apply.
+
+The intermediate events are what make silence diagnosable: a ledger whose last line is `engine_done`
+from forty minutes ago tells Lead that the engine finished and the proxy stopped reporting — the
+difference between "still thinking" and "dead", established without asking anyone. See
+`phase2-monitoring.md` "When a Teammate Goes Quiet".
 
 ### Who writes it
 

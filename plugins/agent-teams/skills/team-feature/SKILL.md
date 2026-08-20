@@ -165,6 +165,7 @@ Execute these steps in order:
 - Spawns new coders when tasks complete and unassigned work remains (one task per coder — they stand down after it)
 - Rotates one reviewer every 3 completed tasks, round-robin, so reviewers do not accumulate the whole run
 - Handles STUCK/QUESTION/REVIEW_LOOP escalations
+- Detects a stalled teammate from the run ledger and the engine process — never by polling on a timer — and replaces it with a fresh finisher instead of doing the work itself
 - Transitions to Phase 3 when ALL coding tasks complete
 
 **Lead does NOT:** read code, review code, run tests, notify reviewers, or forward messages between team members.

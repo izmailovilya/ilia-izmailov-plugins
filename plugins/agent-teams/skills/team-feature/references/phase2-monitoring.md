@@ -54,6 +54,54 @@ After every event, update `.claude/teams/{team-name}/state.md`:
 
 If context feels incomplete or current state is unclear: read `.claude/teams/{team-name}/state.md` — it is self-describing (the **Phase** field tells which phase instructions to follow step by step; roster, task statuses, and exact commands are all there). Honor its `## Engines` section for later spawns — do NOT re-read `~/.claude/agent-teams.json` and do NOT re-probe the CLIs; if the section is absent, every role is Claude.
 
+## When a Teammate Goes Quiet — Bounded Wait
+
+A proxy that finishes its engine run and then stalls is the observed failure mode, seen twice. In
+the worst case Lead waited **two hours**, then committed the coder's work itself — breaking its own
+rule about never touching code, and paying for it in the most expensive context in the team.
+
+**For a healthy task this section costs nothing.** The coder's DONE wakes you; you never check. What
+follows runs only on suspicion.
+
+**Never poll on a timer.** Do not schedule wakeups to ask "is it done yet" — each one is a full turn
+at your context size, and in a real run forty of them bought nothing. You are woken by messages;
+suspicion is what a check needs, not a clock.
+
+### The check (one Bash call, at most three times, ≥15 minutes apart)
+
+```bash
+tail -3 .claude/teams/{team}/ledger.jsonl
+ps -eo pid,etime,command | grep -E 'codex (exec|resume)|grok|kimi' | grep -v grep
+```
+
+Read the two together:
+
+| Ledger tail | Engine process | Verdict |
+|-------------|----------------|---------|
+| `launch`, nothing since | alive | **Working.** Engine runs vary from minutes to over an hour. Wait. |
+| `launch`, nothing since | gone | Engine died without the proxy noticing → treat as dead proxy |
+| `engine_done` / `checks_done`, nothing since ≥15 min | gone | **Dead proxy.** The work exists, the reporter does not |
+| `committed` but no DONE message | gone | Work is finished — just the message was lost. Mark the task complete and move on |
+
+### When the verdict is "dead proxy"
+
+**Do not read the code and do not commit anything yourself.** Instead:
+
+1. `TaskStop` the silent teammate. Confirm it stopped.
+2. Spawn a **fresh coder** under a new name with a finishing brief:
+   ```
+   The engine already did the implementation for task {id}. Its report:
+   .claude/teams/{team}/engine/{role}/{NNN}.out.md — read it.
+   Files it was allowed to touch: {list}.
+   Your job is the tail only: verify with `git status` that nothing outside that list changed,
+   run the self-checks, fix what fails by resuming the engine session {session id} — not by hand —
+   and commit. Do not redo the implementation.
+   ```
+3. 📢 `⏸️ Кодер по задаче {id} перестал отвечать. Работа движка цела — поднял свежего кодера доделать проверки и коммит.`
+
+A fresh finisher starts near 90k and does a handful of turns. That is strictly cheaper than you
+reading the diff at 380k, and it keeps you out of the code.
+
 ## Rotating Reviewers
 
 Reviewers live for the whole run, so they accumulate every review of every task — the same disease

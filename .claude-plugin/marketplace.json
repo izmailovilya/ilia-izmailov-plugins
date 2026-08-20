@@ -15,7 +15,7 @@
       "name": "agent-teams",
       "source": "./plugins/agent-teams",
       "description": "Launch a team of AI agents to implement features with code review gates",
-      "version": "0.8.1"
+      "version": "0.9.0"
     },
     {
       "name": "team-research",

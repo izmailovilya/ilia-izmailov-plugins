@@ -125,7 +125,19 @@ the whole conversation is unreachable.
 {"ts":"...","event":"launch","role":"{role}","engine":"{engine}","task":"{id}","session":"{session id}","out":"{path}"}
 ```
 
-Append a matching `{"event":"done"}` or `{"event":"failed"}` line when the run ends. This is the
+Then append a line at **every** milestone, not only at the end — these are what let Lead tell
+"working" from "dead" without asking you:
+
+| When | Line |
+|------|------|
+| The engine command returns | `{"event":"engine_done","role":"...","task":"...","session":"..."}` |
+| Self-checks finish (coder role) | `{"event":"checks_done","result":"pass\|fail: ..."}` |
+| The commit lands (coder role) | `{"event":"committed","commit":"<sha>"}` |
+| The whole run ends | `{"event":"done"}` or `{"event":"failed","reason":"..."}` |
+
+Each line is one `>>` append and costs almost nothing. Their absence is the signal: a ledger whose
+last line is `engine_done` from forty minutes ago says exactly what went wrong and where, without
+anyone having to interrogate you — which matters because by then you may not be answering. This is the
 only thing that must survive you — the engine records the conversation itself, but nothing else
 knows which of its sessions was yours. If you die before writing it, the map is rebuilt with
 `scripts/engine-sessions.py`; write the line anyway so nobody has to.
