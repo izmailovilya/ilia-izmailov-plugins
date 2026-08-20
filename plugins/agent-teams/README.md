@@ -100,7 +100,7 @@ The Lead evaluates the feature against concrete triggers (not subjective judgmen
 |-------|----------|------|
 | **SIMPLE** | 0-1 medium triggers | Lead + Coder + Unified Reviewer (3 agents) |
 | **MEDIUM** | 2-3 medium triggers, 0 complex triggers | Lead + Tech Lead + 1-3 Reviewers + Coders (4-6 agents) |
-| **COMPLEX** | 4+ medium triggers OR any complex trigger | Lead + 3 Architects + Coders + Risk Testers (5-8+ agents) |
+| **COMPLEX** | 4+ medium triggers OR any complex trigger | Lead + 3 Architects (debate only) + 3 Reviewers + Coders + Risk Testers (5-8+ agents) |
 
 **Medium triggers** (6 checks): 2+ layers touched, changes existing behavior, near sensitive areas, 3+ tasks, task dependencies, 5+ files.
 
@@ -128,16 +128,24 @@ Risk Testers are spawned in parallel — one per CRITICAL/MAJOR risk. Confirmed 
 
 #### Architect Debate (COMPLEX only)
 
-For complex features, 3 specialized Architects replace the Tech Lead + 3 generic reviewers:
+For complex features, 3 specialized Architects settle the specification before any code is written:
 
 1. **Spawn 3 Architects** — Frontend (UI/components/accessibility), Backend (API/DB/data integrity), Systems (testing/CI/DX)
 2. **Debate phase** — each architect critiques the plan from their expertise, debates with others via direct messaging (max 3 rounds)
 3. **Verification checks** — each architect contributes checks from their domain to the verification plan
 4. **Convergence** — architects send "SPEC APPROVED" with final recommendations
-5. **Primary Architect** designated based on feature type (mostly UI → Frontend, mostly API/DB → Backend, cross-cutting → Systems)
-6. **Review mode** — architects transition to specialized code reviewers during Phase 2
+5. **Handover** — each architect writes a ≤25-line review brief for its domain: what a reviewer must
+   check in this feature, the traps found during the debate, which boundaries deserve suspicion
+6. **Stand down** — all three architects shut down, Primary included. The briefs go into the
+   reviewers' prompts, and reviewers do the code review from Phase 2 on.
 
-The Primary Architect maintains `DECISIONS.md`, handles escalations, and serves as tiebreaker.
+**Why they leave.** An architect is cheap in debate and expensive in review, because by review time it
+carries the whole debate transcript. Measured on real runs: an architect's debate turn cost ~36k
+tokens, its review turn ~143k — same agent, four times the price. Three architects were consuming
+54–69% of an entire run against 12–17% for every coder combined. Ending their tenure cut that to 5.8%.
+
+Escalations, pattern-deviation rulings and `DECISIONS.md` go to the Lead; the final cross-task
+consistency check is a one-shot agent over the combined diff.
 
 #### Phase 2: Execution
 
@@ -150,6 +158,16 @@ Coders receive their task along with gold standard examples — real files from 
 3. Runs self-checks (build, lint, type check, convention checks)
 4. Sends review requests directly to reviewers via messaging
 5. Fixes feedback, gets approval, commits
+6. Writes a ≤10-line handover note and **stands down** — the next task gets a fresh coder
+
+Each coder lives exactly one task. Task history helps nobody but is re-read on every remaining turn,
+so carrying it is pure cost; anything genuinely worth passing on goes in the handover note.
+
+**Reviewers rotate too** — one every three completed tasks, round-robin, at task boundaries only.
+The retiring reviewer leaves a ≤15-line standing-findings note (what repeated across tasks, what is
+already settled) and the replacement takes the same name, so coders' rosters stay valid. Without
+rotation, reviewers accumulate every review of every task and become the most expensive agents in
+the run.
 
 **Specialized Review**
 
@@ -284,6 +302,18 @@ How each kind of role is moved:
 - **Team roles** (reviewers, tech lead, architects, coder) — a thin Claude proxy joins the team
   under the same name and delegates to a persistent external session, so review round 2 remembers
   round 1. Other teammates see no difference.
+
+What the proxy does and does not do:
+
+- It passes **paths and commit ranges**, never file contents — the engine runs inside the repository
+  and reads what it needs itself.
+- It spends at most **three tool calls of its own per engine call**. Investigating the code before
+  delegating is the failure mode this rule exists to prevent: on the first real run a reviewer proxy
+  made 30 engine calls against 190 shell commands of its own and effectively did the review itself.
+- In the `coder` role it **never edits a file** — the engine writes, the proxy verifies `git status`
+  and makes the commit.
+- It triages every finding against the cited lines before relaying it, because external engines
+  over-report.
 
 Guarantees that hold regardless of configuration:
 
