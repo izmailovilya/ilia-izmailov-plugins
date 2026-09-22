@@ -15,6 +15,23 @@ something that was actually executed, not just written down.
 /zero-downtime-deploy "безопасно ли выкатывать эту миграцию"
 ```
 
+## Codex
+
+A standalone Codex port lives in
+[`codex-skills/zero-downtime-deploy`](../../codex-skills/zero-downtime-deploy).
+It keeps the same deployment protocol and safety gates without depending on Claude plugin agents,
+`Task(...)`, `AskUserQuestion`, or Claude model aliases.
+
+Install it globally by asking Codex:
+
+```text
+Install this skill globally:
+https://github.com/izmailovilya/ilia-izmailov-plugins/tree/main/codex-skills/zero-downtime-deploy
+```
+
+The Codex port bundles the three specialist roles as prompt references. Codex can delegate them to
+collaboration agents when available and executes the same role locally otherwise.
+
 ## What it does
 
 1. **Maps how traffic reaches the process today** — a scout reads the repository, and if there is a
