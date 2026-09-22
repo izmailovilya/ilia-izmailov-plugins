@@ -1,0 +1,23 @@
+{
+  "name": "bb-plugin-squad",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "bb": ">=0.43",
+    "bbPluginSdk": ">=0.4.84"
+  },
+  "bb": {
+    "name": "Squad",
+    "description": "Мультимодельные системы BB одной командой: совет, арена, команда агентов.",
+    "branding": {
+      "icon": "Users"
+    },
+    "server": "./server.ts",
+    "skills": ["skills"]
+  },
+  "devDependencies": {
+    "@get-bb/plugin-sdk": "0.4.84",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
