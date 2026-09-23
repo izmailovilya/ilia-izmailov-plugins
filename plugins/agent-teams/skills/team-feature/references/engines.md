@@ -94,7 +94,7 @@ a config that never mentions it gets no second opinion at all, not a Claude one.
     "web-researcher": "grok"
   },
   "engines": {
-    "codex": { "model": "gpt-5.6-sol", "effort": "xhigh" }
+    "codex": { "model": "gpt-6-sol", "effort": "xhigh" }
   }
 }
 ```
@@ -136,14 +136,14 @@ on a completely successful run.
 ```
 cmd:     codex exec --skip-git-repo-check --sandbox {sandbox} -m {model} -c model_reasoning_effort="{effort}" "{prompt}" < /dev/null
 resume:  codex exec resume {session} "{prompt}" < /dev/null
-model:   gpt-5.6-sol
+model:   gpt-6-sol
 effort:  xhigh
 sandbox: read → read-only, write → workspace-write
 session: extract from output line matching `session id: <uuid>`
 ```
 
 `< /dev/null` is MANDATORY — without it `codex exec` can hang on "Reading additional input from
-stdin". Only `gpt-5.6-sol` works on a ChatGPT subscription; plain `gpt-5.6` requires a paid API key.
+stdin". Only `gpt-6-sol` works on a ChatGPT subscription; plain `gpt-5.6` requires a paid API key.
 
 ### kimi
 
@@ -230,7 +230,7 @@ If the shell cannot find `cursor-agent`, prefix the call with `PATH="$HOME/.loca
 Claude models through Cursor — you already have that subscription, and the point of offloading is a
 *different* blind spot, not the same model twice. Useful picks: `cursor-grok-4.6-xhigh` for
 adversarial reading (security review, "what if"), `gpt-5.3-codex-xhigh` where the role must write
-and run a script (risk-tester, verifiers), `gpt-5.6-sol-xhigh` for long diffs, `gemini-3.7-flash-high`
+and run a script (risk-tester, verifiers), `gpt-6-sol-xhigh` for long diffs, `gemini-3.7-flash-high`
 for cheap wide tree-walking (codebase-researcher).
 
 ---

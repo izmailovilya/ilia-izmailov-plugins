@@ -1,6 +1,6 @@
 {
   "name": "zero-downtime-deploy",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed",
   "author": {
     "name": "Ilia Izmailov",

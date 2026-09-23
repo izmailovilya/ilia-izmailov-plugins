@@ -145,7 +145,7 @@ CLI upgrades**; judge success by the exit code and a present reply, not by stder
 ```
 cmd:     codex exec --skip-git-repo-check --sandbox read-only -m {model} -c model_reasoning_effort="{effort}" {prompt} < /dev/null
 resume:  codex exec resume {session} {prompt} < /dev/null
-model:   gpt-5.6-sol
+model:   gpt-6-sol
 effort:  xhigh
 session: output line matching `session id: <uuid>`
 ```

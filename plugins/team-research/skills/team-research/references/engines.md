@@ -161,7 +161,7 @@ noise.
 ```
 cmd:     codex exec --skip-git-repo-check --sandbox read-only -m {model} -c model_reasoning_effort="{effort}" {prompt} < /dev/null
 resume:  codex exec resume {session} {prompt} < /dev/null
-model:   gpt-5.6-sol
+model:   gpt-6-sol
 effort:  xhigh
 session: output line matching `session id: <uuid>`
 ```
@@ -212,5 +212,5 @@ create a file, refuses a shell command that would write one, still runs read-onl
 sandbox denies reading secret files such as `.env`.
 
 Do not route roles to Claude models through Cursor — the point is a *different* model. Useful picks:
-`cursor-grok-4.6-xhigh` for the challenger and critic (adversarial reading), `gpt-5.6-sol-xhigh` for a
+`cursor-grok-4.6-xhigh` for the challenger and critic (adversarial reading), `gpt-6-sol-xhigh` for a
 specialist that must hold a long flagged area, `gemini-3.7-flash-high` for a cheap scout.

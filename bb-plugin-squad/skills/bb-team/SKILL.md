@@ -1,6 +1,6 @@
 ---
 name: bb-team
-description: Команда агентов на субтредах BB — ведущий (Lead) собирает команду под фичу — исследователи, архитекторы, кодеры, единый ревьюер, верификаторы. Рабочие роли на GLM 5.3, ревью на Codex, архитекторы на сложных задачах — Opus и GPT-5.6 Sol; участники общаются друг с другом напрямую через bb thread tell. Работает из треда любого провайдера, без привязки к Anthropic — порт концепции Agent Teams на BB. Use when the user asks to implement a feature with a team of agents, says «команда», «собери команду», «team feature», «сделай через команду агентов», or invokes /bb-team.
+description: Команда агентов на субтредах BB — ведущий (Lead) собирает команду под фичу — исследователи, архитекторы, кодеры, единый ревьюер, верификаторы. Рабочие роли на GLM 5.3, ревью на Codex, архитекторы на сложных задачах — Opus и GPT-6 Sol; участники общаются друг с другом напрямую через bb thread tell. Работает из треда любого провайдера, без привязки к Anthropic — порт концепции Agent Teams на BB. Use when the user asks to implement a feature with a team of agents, says «команда», «собери команду», «team feature», «сделай через команду агентов», or invokes /bb-team.
 ---
 
 # Команда агентов (bb-team)
@@ -70,7 +70,7 @@ bb skill list --json
 | Lead | ты | — | — |
 | Codebase Researcher | `acp-opencode` | `zai-coding-plan/glm-5.3` | — |
 | Reference Researcher | `acp-opencode` | `zai-coding-plan/glm-5.3` | — |
-| Architects (дебаты плана) | два: `claude-code` + `codex` | Opus (`claude-opus-5[1m]`) + GPT-5.6 Sol (`gpt-5.6-sol`) | max доступный |
+| Architects (дебаты плана) | два: `claude-code` + `codex` | Opus (`claude-opus-5-5[1m]`) + GPT-6 Sol (`gpt-6-sol`) | max доступный |
 | Coder | `acp-opencode` | `zai-coding-plan/glm-5.3` | `high` |
 | Unified Reviewer | `codex` | `gpt-6-astra` | `xhigh` |
 | Second Reviewer (SENSITIVE, опция) | `acp-opencode` | `zai-coding-plan/glm-5.3` | `high` |
@@ -78,7 +78,7 @@ bb skill list --json
 | CI Verifier | `acp-opencode` | `zai-coding-plan/glm-5.3` | — |
 | Spec Verifier | `acp-opencode` | `zai-coding-plan/glm-5.3` | — |
 
-Логика дефолтов: ведущий — умная модель основной сессии (ты); рабочие роли (кодеры, исследователи, риск-тестеры, верификаторы) — на GLM 5.3, быстрой и доступной в рамках Z.AI-плана; ревью — Codex GPT-6 Astra xhigh (перечисляет больше проблем — хорошо для ревью); архитекторы на сложных задачах — две сильные разные школы: Opus и GPT-5.6 Sol. Проверять свежесть моделей: `bb provider models <provider> --environment "$BB_ENVIRONMENT_ID"`.
+Логика дефолтов: ведущий — умная модель основной сессии (ты); рабочие роли (кодеры, исследователи, риск-тестеры, верификаторы) — на GLM 5.3, быстрой и доступной в рамках Z.AI-плана; ревью — Codex GPT-6 Astra xhigh (перечисляет больше проблем — хорошо для ревью); архитекторы на сложных задачах — две сильные разные школы: Opus и GPT-6 Sol. Проверять свежесть моделей: `bb provider models <provider> --environment "$BB_ENVIRONMENT_ID"`.
 
 ## Артефакты команды
 
@@ -109,7 +109,7 @@ bb skill list --json
 
 Напиши `PLAN.md`: разбей фичу на задачи (файлы, критерии, зависимости). Каждая задача = один будущий кодер.
 
-**Валидация плана — всегда, единый flow.** Спавнь двух архитекторов: **Claude Opus** (`claude-code`, `claude-opus-5[1m]`) и **GPT-5.6 Sol** (`codex`, `gpt-5.6-sol`) — две сильные разные школы. Opus назначь **Primary Architect** (он ведёт DECISIONS.md и называет риски). Персоны раздай по фокусу фичи (Frontend / Backend / Systems — какие подходят). Промпт каждого = `references/architect.md` целиком + персона + пометка Primary для Opus. Дебаты через раунд-файлы: каждый пишет критику плана в `.bb/teams/<slug>/round-N-<роль>.md`, ты собираешь и раздаёшь обоим (tell'ом), максимум 3 раунда до конвергенции («SPEC APPROVED»). Затем каждый пишет ≤25-строчный **бриф для ревьюера** (что проверять, ловушки, подозрительные границы) — они уйдут в промпт ревьюера. Архитекторы archive после дебатов: они дешёвые в споре и дорогие в ревью — не тащи их дальше. Эскалации кодеров и спорные решения после их ухода — на тебе (Lead).
+**Валидация плана — всегда, единый flow.** Спавнь двух архитекторов: **Claude Opus** (`claude-code`, `claude-opus-5-5[1m]`) и **GPT-6 Sol** (`codex`, `gpt-6-sol`) — две сильные разные школы. Opus назначь **Primary Architect** (он ведёт DECISIONS.md и называет риски). Персоны раздай по фокусу фичи (Frontend / Backend / Systems — какие подходят). Промпт каждого = `references/architect.md` целиком + персона + пометка Primary для Opus. Дебаты через раунд-файлы: каждый пишет критику плана в `.bb/teams/<slug>/round-N-<роль>.md`, ты собираешь и раздаёшь обоим (tell'ом), максимум 3 раунда до конвергенции («SPEC APPROVED»). Затем каждый пишет ≤25-строчный **бриф для ревьюера** (что проверять, ловушки, подозрительные границы) — они уйдут в промпт ревьюера. Архитекторы archive после дебатов: они дешёвые в споре и дорогие в ревью — не тащи их дальше. Эскалации кодеров и спорные решения после их ухода — на тебе (Lead).
 
 ## Шаг 3. Риск-анализ
 

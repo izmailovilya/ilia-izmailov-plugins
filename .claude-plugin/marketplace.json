@@ -15,13 +15,13 @@
       "name": "agent-teams",
       "source": "./plugins/agent-teams",
       "description": "Launch a team of AI agents to implement features with code review gates",
-      "version": "0.13.0"
+      "version": "0.13.1"
     },
     {
       "name": "team-research",
       "source": "./plugins/team-research",
       "description": "Launch a team of AI agents for deep parallel codebase research — causal understanding, not just coverage",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "name": "repo-scout",
@@ -33,7 +33,7 @@
       "name": "zero-downtime-deploy",
       "source": "./plugins/zero-downtime-deploy",
       "description": "Set up, harden, or audit deployment so releases don't interrupt service — with a rollback that has actually been rehearsed",
-      "version": "0.3.0"
+      "version": "0.3.1"
     }
   ]
 }

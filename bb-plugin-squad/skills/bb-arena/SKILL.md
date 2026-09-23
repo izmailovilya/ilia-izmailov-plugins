@@ -61,7 +61,7 @@ arena/<YYYY-MM-DD>-<slug>/
 | Участник | Провайдер BB | Модель | Ризонинг |
 |---|---|---|---|
 | Claude Fable | `claude-code` | `claude-fable-5-1` | `high` |
-| Claude Opus | `claude-code` | `claude-opus-5[1m]` | `high` |
+| Claude Opus | `claude-code` | `claude-opus-5-5[1m]` | `high` |
 | Codex | `codex` | `gpt-6-astra` | `xhigh` |
 | GLM 5.3 | `acp-opencode` | `zai-coding-plan/glm-5.3` | `high` |
 
@@ -80,7 +80,7 @@ EOF
 )"
 ```
 
-- Модель с `[1m]` квоть целиком: `--model 'claude-opus-5[1m]'`.
+- Модель с `[1m]` квоть целиком: `--model 'claude-opus-5-5[1m]'`.
 - `--environment "$BB_ENVIRONMENT_ID"` — обязательно, см. «Правила изоляции» в Шаге 2.
 - Для серии из N вариантов — по N субтредов каждой модели (каждому своя концепция вслепую, как в proto-variants).
 - Серийная работа занимает 5–20 минут — предупреди Илью и жди уведомлений, не блокируйся.

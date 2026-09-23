@@ -28,7 +28,7 @@
 
   "_engines_note": "Optional. Only needed when a CLI changes its flags or you want a different model/effort. Omit entirely to use the built-in presets.",
   "engines": {
-    "codex": { "model": "gpt-5.6-sol", "effort": "xhigh" },
+    "codex": { "model": "gpt-6-sol", "effort": "xhigh" },
     "kimi": { "model": "kimi-code/k3" },
     "grok": { "model": "grok-4.6", "effort": "high" },
     "cursor": { "model": "cursor-grok-4.6-xhigh" }
